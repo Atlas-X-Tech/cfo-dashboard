@@ -114,7 +114,7 @@ async function load() {
 
     const [accs, txns, ccs, envs, chkRaw] = await Promise.all([
       get('v_account_balances?select=*'),
-      get('transactions?transaction_date=gte.' + ms + '&order=transaction_date.desc&select=*,categories(name),accounts(bank,name)'),
+      get('transactions?transaction_date=gte.' + ms + '&order=transaction_date.desc&select=*,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       get('v_credit_card_cycle?select=*'),
       get('envelopes?month=eq.' + ms + '&status=eq.active&select=*'),
       get('monthly_expense_status?month=eq.' + ms + '&select=*,fixed_expenses(name,amount,category)&order=status.asc')
