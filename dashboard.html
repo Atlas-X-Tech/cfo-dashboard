@@ -3,218 +3,128 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CFO Personal — Carlos Amaya</title>
+<title>CFO Personal - Carlos Amaya</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --bg: #0f0f0f;
-    --bg2: #1a1a1a;
-    --bg3: #222;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --text: #f0f0f0;
-    --text2: #999;
-    --text3: #555;
-    --green: #22c55e;
-    --red: #ef4444;
-    --amber: #f59e0b;
-    --blue: #3b82f6;
-    --teal: #14b8a6;
-  }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
-  header {
-    padding: 20px 24px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 16px;
-  }
-  .header-left h1 { font-size: 16px; font-weight: 600; color: var(--text); }
-  .header-left p { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .header-right { display: flex; gap: 8px; align-items: center; }
-  .refresh-btn {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background 0.15s;
-  }
-  .refresh-btn:hover { background: #2a2a2a; color: var(--text); }
-  .last-update { font-size: 11px; color: var(--text3); }
-  main { padding: 20px 24px; max-width: 1100px; }
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 12px;
-  }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  @media (max-width: 768px) {
-    .grid-4 { grid-template-columns: repeat(2, 1fr); }
-    .grid-3 { grid-template-columns: repeat(2, 1fr); }
-    .grid-2 { grid-template-columns: 1fr; }
-    main { padding: 16px; }
-    header { padding: 16px; padding-bottom: 12px; }
-  }
-  @media (max-width: 480px) {
-    .grid-4 { grid-template-columns: 1fr 1fr; }
-  }
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-  .card-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
-  .card-value { font-size: 22px; font-weight: 600; }
-  .card-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-  .green { color: var(--green); }
-  .red { color: var(--red); }
-  .amber { color: var(--amber); }
-  .blue { color: var(--blue); }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-  .progress-wrap { height: 5px; background: var(--bg3); border-radius: 3px; margin-top: 8px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-  .black-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 20px;
-  }
-  .black-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .black-title { font-size: 13px; font-weight: 600; }
-  .black-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: var(--bg3);
-    color: var(--text3);
-    border: 1px solid var(--border);
-  }
-  .black-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .black-item-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
-  .black-item-value { font-size: 20px; font-weight: 600; }
-  .accs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 20px; }
-  .acc-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-  .acc-bank { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
-  .acc-name { font-size: 12px; color: var(--text2); margin: 2px 0 8px; }
-  .acc-balance { font-size: 18px; font-weight: 600; }
-  .acc-role { font-size: 10px; color: var(--text3); margin-top: 4px; }
-  .acc-protected { border-color: rgba(255,255,255,0.04); opacity: 0.7; }
-  .cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-  .cat-row { display: flex; align-items: center; gap: 10px; }
-  .cat-name { font-size: 12px; color: var(--text2); width: 170px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cat-bar-wrap { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-  .cat-bar-fill { height: 100%; border-radius: 2px; background: var(--blue); }
-  .cat-amount { font-size: 12px; color: var(--text2); width: 65px; text-align: right; flex-shrink: 0; }
-  .txn-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
-  .txn-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-  .txn-left { display: flex; flex-direction: column; gap: 2px; }
-  .txn-desc { font-size: 13px; color: var(--text); }
-  .txn-meta { font-size: 10px; color: var(--text3); }
-  .txn-amount { font-size: 13px; font-weight: 600; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px; }
-  .kpi-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .kpi-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
-  .kpi-value { font-size: 20px; font-weight: 600; }
-  .kpi-status { font-size: 10px; margin-top: 4px; }
-  .fe-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
-  .fe-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .fe-numbers { font-size: 13px; color: var(--text2); }
-  .fe-pct { font-size: 18px; font-weight: 600; }
-  .fe-bar-wrap { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
-  .fe-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
-  .fe-sub { font-size: 11px; color: var(--text3); }
-  .env-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-  .loading { color: var(--text3); font-size: 13px; padding: 40px 0; text-align: center; }
-  .error { color: var(--red); font-size: 13px; padding: 20px 0; }
-  .source-badge {
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: var(--bg3);
-    color: var(--text3);
-    border: 1px solid var(--border);
-    margin-left: 6px;
-  }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0f0f0f; --bg2: #1a1a1a; --bg3: #222;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f0; --text2: #999; --text3: #555;
+  --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6; --teal: #14b8a6;
+}
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+header { padding: 20px 24px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.header-left h1 { font-size: 16px; font-weight: 600; }
+.header-left p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.refresh-btn { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.refresh-btn:hover { background: #2a2a2a; color: var(--text); }
+main { padding: 20px 24px; max-width: 1100px; }
+.sl { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
+@media(max-width:768px) { .g4 { grid-template-columns: repeat(2,1fr); } .g3 { grid-template-columns: repeat(2,1fr); } main { padding: 16px; } }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+.card-value { font-size: 22px; font-weight: 600; }
+.card-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.green { color: var(--green); } .red { color: var(--red); } .amber { color: var(--amber); }
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.pw { height: 5px; background: var(--bg3); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.pf { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.black-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+.black-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.black-title { font-size: 13px; font-weight: 600; }
+.black-badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+.black-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.bli { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
+.blv { font-size: 20px; font-weight: 600; }
+.accs-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 10px; margin-bottom: 20px; }
+.acc-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.acc-bank { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
+.acc-name { font-size: 12px; color: var(--text2); margin: 2px 0 8px; }
+.acc-balance { font-size: 18px; font-weight: 600; }
+.acc-role { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.acc-prot { border-color: rgba(255,255,255,0.04); opacity: 0.7; }
+.cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.cat-row { display: flex; align-items: center; gap: 10px; }
+.cat-name { font-size: 12px; color: var(--text2); width: 170px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cat-bw { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.cat-bf { height: 100%; border-radius: 2px; background: var(--blue); }
+.cat-amt { font-size: 12px; color: var(--text2); width: 65px; text-align: right; flex-shrink: 0; }
+.txn-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.txn-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
+.txn-left { display: flex; flex-direction: column; gap: 2px; }
+.txn-desc { font-size: 13px; color: var(--text); }
+.txn-meta { font-size: 10px; color: var(--text3); }
+.txn-amt { font-size: 13px; font-weight: 600; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 10px; margin-bottom: 20px; }
+.kpi-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.kpi-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.kpi-value { font-size: 20px; font-weight: 600; }
+.kpi-status { font-size: 10px; margin-top: 4px; }
+.fe-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+.fe-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.fe-numbers { font-size: 13px; color: var(--text2); }
+.fe-pct { font-size: 18px; font-weight: 600; }
+.fe-bar-wrap { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.fe-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+.fe-sub { font-size: 11px; color: var(--text3); }
+.chk-summary { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; color: var(--text3); }
+.chk-summary span { color: var(--text2); font-weight: 500; }
+.chk-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 8px; margin-bottom: 20px; }
+.chk-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
+.chk-item.paid { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); }
+.chk-icon { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+.chk-icon.ok { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.chk-icon.pend { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
+.chk-name { flex: 1; font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chk-item.paid .chk-name { color: var(--text3); text-decoration: line-through; }
+.chk-amt { font-size: 12px; font-weight: 500; flex-shrink: 0; }
+.chk-item.paid .chk-amt { color: var(--green); }
+.src-badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--bg3); color: var(--text3); border: 1px solid var(--border); margin-left: 6px; }
+.loading { color: var(--text3); font-size: 13px; padding: 40px 0; text-align: center; }
+.err { color: var(--red); font-size: 13px; padding: 20px 0; }
 </style>
 </head>
 <body>
-
 <header>
   <div class="header-left">
     <h1>CFO Personal</h1>
     <p id="last-update">Cargando...</p>
   </div>
-  <div class="header-right">
-    <button class="refresh-btn" onclick="load()">↻ Actualizar</button>
-  </div>
+  <button class="refresh-btn" onclick="load()">Actualizar</button>
 </header>
-
-<main id="main">
-  <p class="loading">Conectando con Supabase...</p>
-</main>
-
+<main id="main"><p class="loading">Conectando con Supabase...</p></main>
 <script>
-const URL = 'https://apdgxypnkrphulpcplpv.supabase.co';
+const URL2 = 'https://apdgxypnkrphulpcplpv.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZGd4eXBua3JwaHVscGNwbHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4ODI2NjQsImV4cCI6MjA2MTQ1ODY2NH0.RFsbPZGlwEFVVZMHPdpxoFCBNfWKWJGoRNJWQhpFzxI';
-
-const h = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' };
-const get = p => fetch(`${URL}/rest/v1/${p}`, { headers: h }).then(r => r.json());
+const H = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+const get = p => fetch(URL2 + '/rest/v1/' + p, { headers: H }).then(r => r.json());
 const fmt = n => '$' + parseFloat(n||0).toFixed(2);
 const fmtK = n => { const v = parseFloat(n||0); return v >= 1000 ? '$' + (v/1000).toFixed(1) + 'k' : fmt(v); };
-const clr = (v, ok, warn) => v >= ok ? 'green' : v >= warn ? 'amber' : 'red';
 
 async function load() {
   document.getElementById('last-update').textContent = 'Actualizando...';
   const main = document.getElementById('main');
   main.innerHTML = '<p class="loading">Cargando datos...</p>';
-
   try {
     const now = new Date();
     const ms = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
     const day = now.getDate();
 
-    const [accs, txns, ccs, envs] = await Promise.all([
+    const [accs, txns, ccs, envs, chkRaw] = await Promise.all([
       get('v_account_balances?select=*'),
-      get(`transactions?transaction_date=gte.${ms}&order=transaction_date.desc&select=*,categories(name),accounts(bank,name)`),
+      get('transactions?transaction_date=gte.' + ms + '&order=transaction_date.desc&select=*,categories(name),accounts(bank,name)'),
       get('v_credit_card_cycle?select=*'),
-      get(`envelopes?month=eq.${ms}&status=eq.active&select=*`)
+      get('envelopes?month=eq.' + ms + '&status=eq.active&select=*'),
+      get('monthly_expense_status?month=eq.' + ms + '&select=*,fixed_expenses(name,amount,category)&order=status.asc')
     ]);
 
     const T = Array.isArray(txns) ? txns : [];
     const A = Array.isArray(accs) ? accs : [];
     const E = Array.isArray(envs) ? envs : [];
     const CC = Array.isArray(ccs) ? ccs : [];
+    const CHK = Array.isArray(chkRaw) ? chkRaw : [];
 
     const gastos = T.filter(t => ['gasto','pago_tarjeta'].includes(t.type));
     const ingresos = T.filter(t => ['ingreso','ingreso_variable'].includes(t.type));
@@ -228,7 +138,9 @@ async function load() {
     const protegidas = A.filter(a => ['reserva','ahorro_diferido','metas'].includes(a.role));
     const liquido = operativas.reduce((s,a) => s + parseFloat(a.balance||0), 0);
 
-    const feSaldo = 130;
+    const feSaldo = protegidas.find(a => a.name && a.name.toLowerCase().includes('produbanco') && a.role === 'reserva') 
+      ? parseFloat(protegidas.find(a => a.name && a.name.toLowerCase().includes('produbanco') && a.role === 'reserva').balance||0) 
+      : 130;
     const feMeta = 4600;
     const fePct = feSaldo / feMeta * 100;
 
@@ -239,205 +151,190 @@ async function load() {
 
     const catMap = {};
     gastos.forEach(t => {
-      const c = t.categories?.name || 'Sin categoría';
+      const c = t.categories && t.categories.name ? t.categories.name : 'Sin categoria';
       catMap[c] = (catMap[c]||0) + parseFloat(t.amount||0);
     });
     const topCats = Object.entries(catMap).sort((a,b) => b[1]-a[1]).slice(0,7);
-    const maxC = topCats[0]?.[1] || 1;
+    const maxC = topCats[0] ? topCats[0][1] : 1;
 
     const tasaAhorro = totalI > 0 ? (totalI - totalG) / totalI * 100 : 0;
     const blackPct = blackDeuda / presupuesto * 100;
 
+    const chkPagados = CHK.filter(c => c.status === 'pagado');
+    const chkPendientes = CHK.filter(c => c.status === 'pendiente');
+    const totalFijos = CHK.reduce((s,c) => s + parseFloat(c.fixed_expenses && c.fixed_expenses.amount ? c.fixed_expenses.amount : 0), 0);
+    const totalPagado = chkPagados.reduce((s,c) => s + parseFloat(c.fixed_expenses && c.fixed_expenses.amount ? c.fixed_expenses.amount : 0), 0);
+
     let html = '';
 
     // RESUMEN
-    html += `<p class="section-label">Resumen — ${now.toLocaleDateString('es-EC',{month:'long',year:'numeric'})}</p>`;
-    html += `<div class="grid-4">
-      <div class="card">
-        <p class="card-label">Gastos del mes</p>
-        <p class="card-value ${totalG > presupuesto ? 'red' : totalG > presupuesto*0.8 ? 'amber' : ''}">${fmtK(totalG)}</p>
-        <p class="card-sub">de $${presupuesto} presupuesto</p>
-        <div class="progress-wrap"><div class="progress-fill" style="width:${pctG}%;background:${pctG>90?'var(--red)':pctG>70?'var(--amber)':'var(--blue)'}"></div></div>
-      </div>
-      <div class="card">
-        <p class="card-label">Ingresos del mes</p>
-        <p class="card-value ${totalI > 0 ? 'green' : ''}">${fmtK(totalI)}</p>
-        <p class="card-sub">${T.filter(t=>['ingreso','ingreso_variable'].includes(t.type)).length} transacciones</p>
-      </div>
-      <div class="card">
-        <p class="card-label">Balance neto</p>
-        <p class="card-value ${balance >= 0 ? 'green' : 'red'}">${fmtK(balance)}</p>
-        <p class="card-sub">${balance >= 0 ? 'positivo este mes' : 'negativo este mes'}</p>
-      </div>
-      <div class="card">
-        <p class="card-label">Líquido disponible</p>
-        <p class="card-value">${fmtK(liquido)}</p>
-        <p class="card-sub">cuentas operativas</p>
-      </div>
-    </div>`;
+    html += '<p class="sl">Resumen — ' + now.toLocaleDateString('es-EC', {month:'long', year:'numeric'}) + '</p>';
+    html += '<div class="g4">';
+    html += '<div class="card"><p class="card-label">Gastos del mes</p>';
+    html += '<p class="card-value ' + (totalG > presupuesto ? 'red' : totalG > presupuesto*0.8 ? 'amber' : '') + '">' + fmtK(totalG) + '</p>';
+    html += '<p class="card-sub">de $' + presupuesto + ' presupuesto</p>';
+    html += '<div class="pw"><div class="pf" style="width:' + pctG + '%;background:' + (pctG>90?'var(--red)':pctG>70?'var(--amber)':'var(--blue)') + '"></div></div></div>';
+    html += '<div class="card"><p class="card-label">Ingresos del mes</p>';
+    html += '<p class="card-value ' + (totalI > 0 ? 'green' : '') + '">' + fmtK(totalI) + '</p>';
+    html += '<p class="card-sub">' + T.filter(t => ['ingreso','ingreso_variable'].includes(t.type)).length + ' transacciones</p></div>';
+    html += '<div class="card"><p class="card-label">Balance neto</p>';
+    html += '<p class="card-value ' + (balance >= 0 ? 'green' : 'red') + '">' + fmtK(balance) + '</p>';
+    html += '<p class="card-sub">' + (balance >= 0 ? 'positivo este mes' : 'negativo este mes') + '</p></div>';
+    html += '<div class="card"><p class="card-label">Liquido disponible</p>';
+    html += '<p class="card-value">' + fmtK(liquido) + '</p><p class="card-sub">cuentas operativas</p></div>';
+    html += '</div>';
+
+    // GASTOS FIJOS CHECKLIST
+    html += '<hr class="divider">';
+    html += '<p class="sl">Gastos fijos del mes</p>';
+    html += '<div class="chk-summary">';
+    html += '<span>Pagados: <span>' + chkPagados.length + ' / ' + CHK.length + '</span></span>';
+    html += '<span>Pagado: <span class="green">' + fmt(totalPagado) + '</span></span>';
+    html += '<span>Pendiente: <span class="amber">' + fmt(totalFijos - totalPagado) + '</span></span>';
+    html += '</div>';
+    if (CHK.length > 0) {
+      html += '<div class="chk-grid">';
+      CHK.forEach(function(c) {
+        const fe = c.fixed_expenses || {};
+        const paid = c.status === 'pagado';
+        html += '<div class="chk-item ' + (paid ? 'paid' : '') + '">';
+        html += '<div class="chk-icon ' + (paid ? 'ok' : 'pend') + '">' + (paid ? '&#10003;' : '') + '</div>';
+        html += '<span class="chk-name">' + (fe.name || '-') + '</span>';
+        html += '<span class="chk-amt">' + fmt(fe.amount) + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p style="color:var(--text3);font-size:12px;margin-bottom:20px">Sin gastos fijos registrados para este mes.</p>';
+    }
 
     // TARJETA BLACK
-    html += `<hr class="divider">`;
-    html += `<p class="section-label">Tarjeta Black</p>`;
-    html += `<div class="black-card">
-      <div class="black-header">
-        <span class="black-title">Produbanco Black</span>
-        <span class="black-badge">Corte día 15 · Pago día 1</span>
-      </div>
-      <div class="black-grid">
-        <div>
-          <p class="black-item-label">Deuda total</p>
-          <p class="black-item-value ${blackDeuda>300?'red':blackDeuda>150?'amber':''}">${fmt(blackDeuda)}</p>
-        </div>
-        <div>
-          <p class="black-item-label">Ciclo actual</p>
-          <p class="black-item-value">${fmt(blackCiclo)}</p>
-        </div>
-        <div>
-          <p class="black-item-label">Días para corte</p>
-          <p class="black-item-value ${diasCorte<=3?'red':diasCorte<=7?'amber':''}">${Math.max(0,diasCorte)}d</p>
-        </div>
-      </div>
-      <div class="progress-wrap" style="margin-top:12px"><div class="progress-fill" style="width:${Math.min(100,blackDeuda/500*100)}%;background:${blackDeuda>400?'var(--red)':blackDeuda>250?'var(--amber)':'var(--teal)'}"></div></div>
-      <p style="font-size:10px;color:var(--text3);margin-top:5px">Uso vs límite referencial $500</p>
-    </div>`;
+    html += '<hr class="divider">';
+    html += '<p class="sl">Tarjeta Black</p>';
+    html += '<div class="black-card">';
+    html += '<div class="black-header"><span class="black-title">Produbanco Black</span><span class="black-badge">Corte dia 15 - Pago dia 1</span></div>';
+    html += '<div class="black-grid">';
+    html += '<div><p class="bli">Deuda total</p><p class="blv ' + (blackDeuda>300?'red':blackDeuda>150?'amber':'') + '">' + fmt(blackDeuda) + '</p></div>';
+    html += '<div><p class="bli">Ciclo actual</p><p class="blv">' + fmt(blackCiclo) + '</p></div>';
+    html += '<div><p class="bli">Dias para corte</p><p class="blv ' + (diasCorte<=3?'red':diasCorte<=7?'amber':'') + '">' + Math.max(0,diasCorte) + 'd</p></div>';
+    html += '</div>';
+    html += '<div class="pw" style="margin-top:12px"><div class="pf" style="width:' + Math.min(100,blackDeuda/500*100) + '%;background:' + (blackDeuda>400?'var(--red)':blackDeuda>250?'var(--amber)':'var(--teal)') + '"></div></div>';
+    html += '<p style="font-size:10px;color:var(--text3);margin-top:5px">Uso vs limite referencial $500</p>';
+    html += '</div>';
 
     // FONDO DE EMERGENCIA
-    html += `<hr class="divider">`;
-    html += `<p class="section-label">Fondo de emergencia</p>`;
-    html += `<div class="fe-section">
-      <div class="fe-header">
-        <span class="fe-numbers">${fmt(feSaldo)} de ${fmt(feMeta)}</span>
-        <span class="fe-pct ${fePct<25?'red':fePct<50?'amber':'green'}">${fePct.toFixed(1)}%</span>
-      </div>
-      <div class="fe-bar-wrap"><div class="fe-bar-fill" style="width:${fePct}%;background:${fePct<25?'var(--red)':fePct<50?'var(--amber)':'var(--teal)'}"></div></div>
-      <p class="fe-sub">Meta: 6 meses de gastos fijos — faltan ${fmt(feMeta - feSaldo)} · ${fePct<25?'Prioridad alta: FE crítico':'En progreso'}</p>
-    </div>`;
+    html += '<hr class="divider">';
+    html += '<p class="sl">Fondo de emergencia</p>';
+    html += '<div class="fe-section">';
+    html += '<div class="fe-header"><span class="fe-numbers">' + fmt(feSaldo) + ' de ' + fmt(feMeta) + '</span>';
+    html += '<span class="fe-pct ' + (fePct<25?'red':fePct<50?'amber':'green') + '">' + fePct.toFixed(1) + '%</span></div>';
+    html += '<div class="fe-bar-wrap"><div class="fe-bar-fill" style="width:' + fePct + '%;background:' + (fePct<25?'var(--red)':fePct<50?'var(--amber)':'var(--teal)') + '"></div></div>';
+    html += '<p class="fe-sub">Meta: 6 meses de gastos fijos - faltan ' + fmt(feMeta - feSaldo) + ' - ' + (fePct<25?'Prioridad alta: FE critico':'En progreso') + '</p>';
+    html += '</div>';
 
-    // CUENTAS OPERATIVAS
-    html += `<hr class="divider">`;
-    html += `<p class="section-label">Cuentas operativas</p>`;
-    html += `<div class="accs-grid">`;
+    // CUENTAS
+    html += '<hr class="divider">';
+    html += '<p class="sl">Cuentas operativas</p>';
+    html += '<div class="accs-grid">';
     if (operativas.length > 0) {
-      operativas.forEach(a => {
-        html += `<div class="acc-card">
-          <p class="acc-bank">${a.bank||'banco'}</p>
-          <p class="acc-name">${a.name||'Cuenta'}</p>
-          <p class="acc-balance">${fmt(a.balance)}</p>
-          <p class="acc-role">operativa</p>
-        </div>`;
+      operativas.forEach(function(a) {
+        html += '<div class="acc-card"><p class="acc-bank">' + (a.bank||'banco') + '</p>';
+        html += '<p class="acc-name">' + (a.name||'Cuenta') + '</p>';
+        html += '<p class="acc-balance">' + fmt(a.balance) + '</p>';
+        html += '<p class="acc-role">operativa</p></div>';
       });
     } else {
-      html += `<div class="acc-card"><p class="acc-bank">—</p><p class="acc-name">Sin datos</p><p class="acc-balance">$0.00</p></div>`;
+      html += '<div class="acc-card"><p class="acc-bank">-</p><p class="acc-name">Sin datos</p><p class="acc-balance">$0.00</p></div>';
     }
-    html += `</div>`;
+    html += '</div>';
 
-    // CUENTAS PROTEGIDAS
     if (protegidas.length > 0) {
-      html += `<p class="section-label">Cuentas protegidas</p>`;
-      html += `<div class="accs-grid">`;
-      protegidas.forEach(a => {
-        html += `<div class="acc-card acc-protected">
-          <p class="acc-bank">${a.bank||'banco'}</p>
-          <p class="acc-name">${a.name||'Ahorro'}</p>
-          <p class="acc-balance">${fmt(a.balance)}</p>
-          <p class="acc-role">${a.role}</p>
-        </div>`;
+      html += '<p class="sl">Cuentas protegidas</p>';
+      html += '<div class="accs-grid">';
+      protegidas.forEach(function(a) {
+        html += '<div class="acc-card acc-prot"><p class="acc-bank">' + (a.bank||'banco') + '</p>';
+        html += '<p class="acc-name">' + (a.name||'Ahorro') + '</p>';
+        html += '<p class="acc-balance">' + fmt(a.balance) + '</p>';
+        html += '<p class="acc-role">' + (a.role||'protegida') + '</p></div>';
       });
-      html += `</div>`;
+      html += '</div>';
     }
 
     // GASTOS POR CATEGORIA
     if (topCats.length > 0) {
-      html += `<hr class="divider">`;
-      html += `<p class="section-label">Gastos por categoría — ${now.toLocaleDateString('es-EC',{month:'long'})}</p>`;
-      html += `<div class="cat-list">`;
-      topCats.forEach(([cat, amt]) => {
-        html += `<div class="cat-row">
-          <span class="cat-name">${cat}</span>
-          <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:${amt/maxC*100}%"></div></div>
-          <span class="cat-amount">${fmt(amt)}</span>
-        </div>`;
+      html += '<hr class="divider">';
+      html += '<p class="sl">Gastos por categoria - ' + now.toLocaleDateString('es-EC',{month:'long'}) + '</p>';
+      html += '<div class="cat-list">';
+      topCats.forEach(function(entry) {
+        html += '<div class="cat-row"><span class="cat-name">' + entry[0] + '</span>';
+        html += '<div class="cat-bw"><div class="cat-bf" style="width:' + (entry[1]/maxC*100) + '%"></div></div>';
+        html += '<span class="cat-amt">' + fmt(entry[1]) + '</span></div>';
       });
-      html += `</div>`;
+      html += '</div>';
     }
 
     // KPIs
-    html += `<hr class="divider">`;
-    html += `<p class="section-label">KPIs financieros</p>`;
-    html += `<div class="kpi-grid">
-      <div class="kpi-card">
-        <p class="kpi-label">Tasa de ahorro</p>
-        <p class="kpi-value ${tasaAhorro>=10?'green':'red'}">${tasaAhorro.toFixed(1)}%</p>
-        <p class="kpi-status ${tasaAhorro>=10?'green':'red'}">${tasaAhorro>=10?'saludable (>10%)':'por debajo del 10%'}</p>
-      </div>
-      <div class="kpi-card">
-        <p class="kpi-label">Deuda Black vs ingreso</p>
-        <p class="kpi-value ${blackPct<25?'green':blackPct<40?'amber':'red'}">${blackPct.toFixed(0)}%</p>
-        <p class="kpi-status ${blackPct<25?'green':'amber'}">${blackPct<25?'bajo control':'revisar — supera 25%'}</p>
-      </div>
-      <div class="kpi-card">
-        <p class="kpi-label">Cobertura FE</p>
-        <p class="kpi-value ${fePct>=25?'green':'red'}">${fePct.toFixed(1)}%</p>
-        <p class="kpi-status ${fePct>=25?'green':'red'}">${fePct>=25?'en rango':'prioridad alta'}</p>
-      </div>
-      <div class="kpi-card">
-        <p class="kpi-label">Transacciones del mes</p>
-        <p class="kpi-value">${T.length}</p>
-        <p class="kpi-status" style="color:var(--text3)">${T.filter(t=>t.source==='gmail').length} auto · ${T.filter(t=>t.source==='telegram').length} manual · ${T.filter(t=>t.source==='manual').length} directo</p>
-      </div>
-    </div>`;
+    html += '<hr class="divider">';
+    html += '<p class="sl">KPIs financieros</p>';
+    html += '<div class="kpi-grid">';
+    html += '<div class="kpi-card"><p class="kpi-label">Tasa de ahorro</p>';
+    html += '<p class="kpi-value ' + (tasaAhorro>=10?'green':'red') + '">' + tasaAhorro.toFixed(1) + '%</p>';
+    html += '<p class="kpi-status ' + (tasaAhorro>=10?'green':'red') + '">' + (tasaAhorro>=10?'saludable (>10%)':'por debajo del 10%') + '</p></div>';
+    html += '<div class="kpi-card"><p class="kpi-label">Deuda Black vs ingreso</p>';
+    html += '<p class="kpi-value ' + (blackPct<25?'green':blackPct<40?'amber':'red') + '">' + blackPct.toFixed(0) + '%</p>';
+    html += '<p class="kpi-status ' + (blackPct<25?'green':'amber') + '">' + (blackPct<25?'bajo control':'revisar') + '</p></div>';
+    html += '<div class="kpi-card"><p class="kpi-label">Cobertura FE</p>';
+    html += '<p class="kpi-value ' + (fePct>=25?'green':'red') + '">' + fePct.toFixed(1) + '%</p>';
+    html += '<p class="kpi-status ' + (fePct>=25?'green':'red') + '">' + (fePct>=25?'en rango':'prioridad alta') + '</p></div>';
+    html += '<div class="kpi-card"><p class="kpi-label">Fijos pagados</p>';
+    html += '<p class="kpi-value ' + (CHK.length>0 && chkPagados.length===CHK.length?'green':chkPendientes.length>0?'amber':'') + '">' + chkPagados.length + '/' + CHK.length + '</p>';
+    html += '<p class="kpi-status" style="color:var(--text3)">' + fmt(totalPagado) + ' de ' + fmt(totalFijos) + '</p></div>';
+    html += '</div>';
 
     // ULTIMAS TRANSACCIONES
-    const recientes = T.slice(0, 8);
-    if (recientes.length > 0) {
-      html += `<hr class="divider">`;
-      html += `<p class="section-label">Últimas transacciones</p>`;
-      html += `<div class="txn-list">`;
-      recientes.forEach(t => {
+    const rec = T.slice(0, 8);
+    if (rec.length > 0) {
+      html += '<hr class="divider">';
+      html += '<p class="sl">Ultimas transacciones</p>';
+      html += '<div class="txn-list">';
+      rec.forEach(function(t) {
         const isG = ['gasto','pago_tarjeta'].includes(t.type);
-        const cat = t.categories?.name || t.type;
-        const banco = t.accounts?.bank || '';
-        html += `<div class="txn-row">
-          <div class="txn-left">
-            <span class="txn-desc">${t.description || cat}<span class="source-badge">${t.source||'manual'}</span></span>
-            <span class="txn-meta">${cat} · ${banco} · ${t.transaction_date}</span>
-          </div>
-          <span class="txn-amount" style="color:${isG?'var(--red)':'var(--green)'}">${isG?'−':'+'}${fmt(t.amount)}</span>
-        </div>`;
+        const cat = t.categories && t.categories.name ? t.categories.name : t.type;
+        const banco = t.accounts && t.accounts.bank ? t.accounts.bank : '';
+        html += '<div class="txn-row"><div class="txn-left">';
+        html += '<span class="txn-desc">' + (t.description||cat) + '<span class="src-badge">' + (t.source||'manual') + '</span></span>';
+        html += '<span class="txn-meta">' + cat + ' - ' + banco + ' - ' + t.transaction_date + '</span>';
+        html += '</div><span class="txn-amt" style="color:' + (isG?'var(--red)':'var(--green)') + '">' + (isG?'-':'+') + fmt(t.amount) + '</span></div>';
       });
-      html += `</div>`;
+      html += '</div>';
     }
 
     // SOBRES
     if (E.length > 0) {
-      html += `<hr class="divider">`;
-      html += `<p class="section-label">Sobres activos</p>`;
-      html += `<div class="cat-list">`;
-      E.forEach(e => {
+      html += '<hr class="divider">';
+      html += '<p class="sl">Sobres activos</p>';
+      html += '<div class="cat-list">';
+      E.forEach(function(e) {
         const pct = Math.min(100, parseFloat(e.spent||0) / parseFloat(e.budgeted||1) * 100);
-        html += `<div class="cat-row">
-          <span class="cat-name">${e.name}</span>
-          <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:${pct}%;background:${pct>80?'var(--red)':pct>50?'var(--amber)':'var(--teal)'}"></div></div>
-          <span class="cat-amount">${fmt(e.spent)}/${fmt(e.budgeted)}</span>
-        </div>`;
+        html += '<div class="cat-row"><span class="cat-name">' + e.name + '</span>';
+        html += '<div class="cat-bw"><div class="cat-bf" style="width:' + pct + '%;background:' + (pct>80?'var(--red)':pct>50?'var(--amber)':'var(--teal)') + '"></div></div>';
+        html += '<span class="cat-amt">' + fmt(e.spent) + '/' + fmt(e.budgeted) + '</span></div>';
       });
-      html += `</div>`;
+      html += '</div>';
     }
 
-    html += `<div style="height:40px"></div>`;
-
+    html += '<div style="height:40px"></div>';
     main.innerHTML = html;
-    document.getElementById('last-update').textContent = `Actualizado ${now.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'})}`;
+    document.getElementById('last-update').textContent = 'Actualizado ' + now.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
 
   } catch(err) {
-    main.innerHTML = `<p class="error">Error: ${err.message}</p>`;
-    document.getElementById('last-update').textContent = 'Error de conexión';
+    main.innerHTML = '<p class="err">Error: ' + err.message + '</p>';
+    document.getElementById('last-update').textContent = 'Error de conexion';
   }
 }
 
 load();
-setInterval(load, 5 * 60 * 1000);
+setInterval(load, 300000);
 </script>
 </body>
 </html>
