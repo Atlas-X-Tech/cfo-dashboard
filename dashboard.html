@@ -219,7 +219,7 @@ async function load(){
     const metas=byRole('metas')[0]||{balance:0,name:'Guayaquil Ahorro'};
 
     // Métricas
-    const gastos=T.filter(t=>['gasto','pago_tarjeta'].includes(t.type));
+    const gastos=T.filter(t=>['gasto','pago_tarjeta','transferencia','ahorro_diferido'].includes(t.type));
     const ingresos=T.filter(t=>['ingreso','ingreso_variable'].includes(t.type));
     const tG=$f(gastos.reduce((s,t)=>s+$f(t.amount),0));
     const tI=$f(ingresos.reduce((s,t)=>s+$f(t.amount),0));
@@ -406,7 +406,7 @@ async function load(){
       html+=`<p class="sl">últimas transacciones</p>`;
       html+=`<div class="g" style="padding:4px 0">`;
       recTxn.forEach(t=>{
-        const isG=['gasto','pago_tarjeta'].includes(t.type);
+        const isG=['gasto','pago_tarjeta','transferencia','ahorro_diferido'].includes(t.type);
         const cat=t.categories?.name||t.type;
         const banco=t.accounts?.bank||'';
         html+=`<div class="txn">
