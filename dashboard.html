@@ -179,7 +179,7 @@ async function load(){
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc&select=*,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
       q('envelopes?month=eq.'+mes+'&status=eq.active&select=*'),
-      q('monthly_expense_status?month=eq.'+mes+'&select=*,fixed_expenses(name,amount,category)&order=status.asc,fixed_expenses(name).asc')
+      q('monthly_expense_status?month=eq.'+mes+'&select=*,fixed_expenses!expense_id(name,amount,category)&order=status.asc')
     ]);
     const T=Array.isArray(txns)?txns:[];
     const A=Array.isArray(accs)?accs:[];
@@ -187,7 +187,7 @@ async function load(){
     const E=Array.isArray(envs)?envs:[];
     const CHK=Array.isArray(chk)?chk:[];
 
-    const gastos=T.filter(t=>['gasto','pago_tarjeta','transferencia','ahorro_diferido'].includes(t.type));
+    const gastos=T.filter(t=>t.type==='gasto');
     const ingresos=T.filter(t=>['ingreso','ingreso_variable'].includes(t.type));
     const tG=$f(gastos.reduce((s,t)=>s+$f(t.amount),0));
     const tI=$f(ingresos.reduce((s,t)=>s+$f(t.amount),0));
