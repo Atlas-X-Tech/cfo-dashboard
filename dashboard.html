@@ -228,7 +228,7 @@ async function load(){
     // DISPONIBLE REAL = Pichincha Corriente + Produbanco Corriente - Black total a pagar
     const saldoPich=$f(opPich.balance);
     const saldoProd=$f(recep.balance);
-    const disponible=saldoPich+saldoProd-bTotal;
+    const disponible=saldoPich+saldoProd;
 
     // PATRIMONIO TOTAL = suma de todas las cuentas
     const patrimonio=A.reduce((s,a)=>s+$f(a.balance),0);
