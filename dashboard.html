@@ -4,16 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CFO Personal · Carlos Amaya</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0D0D0D;--s1:#141414;--s2:#1A1A1A;--s3:#222222;--s4:#2A2A2A;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--border3:rgba(255,255,255,0.2);
   --fg:#F0F0F0;--fg2:rgba(240,240,240,0.65);--fg3:rgba(240,240,240,0.35);--fg4:rgba(240,240,240,0.18);
-  --prod:#00C896;--prod-d:rgba(0,200,150,0.08);--prod-b:rgba(0,200,150,0.2);--prod-bb:rgba(0,200,150,0.35);
-  --pich:#F5C518;--pich-d:rgba(245,197,24,0.08);--pich-b:rgba(245,197,24,0.2);--pich-bb:rgba(245,197,24,0.35);
-  --guay:#00D4D4;--guay-d:rgba(0,212,212,0.08);--guay-b:rgba(0,212,212,0.2);--guay-bb:rgba(0,212,212,0.35);
+  --prod:#00C896;--pich:#F5C518;--guay:#00D4D4;
   --pos:#00C896;--neg:#FF4D6D;--warn:#F5C518;--info:#8BA7FF;
   --pos-d:rgba(0,200,150,0.08);--neg-d:rgba(255,77,109,0.08);--warn-d:rgba(245,197,24,0.08);--info-d:rgba(139,167,255,0.08);
 }
@@ -36,16 +34,14 @@ header{display:flex;justify-content:space-between;align-items:center;padding:32p
 @media(max-width:960px){.layout{grid-template-columns:1fr}.side-col{position:static}}
 .chk-panel{background:var(--s1);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-top:28px}
 .chk-panel-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.chk-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg)}
+.chk-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase}
 .chk-panel-badge{font-size:10px;color:var(--fg3);font-family:'DM Mono',monospace;background:var(--s3);padding:2px 8px;border-radius:4px;border:1px solid var(--border)}
 .chk-prog-wrap{height:2px;background:rgba(255,255,255,0.05)}
 .chk-prog-fill{height:100%;background:var(--pos);transition:width 0.8s ease}
 .chk-list{max-height:calc(100vh - 200px);overflow-y:auto;padding:8px}
 .chk-list::-webkit-scrollbar{width:3px}
-.chk-list::-webkit-scrollbar-track{background:transparent}
 .chk-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .chk-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid transparent;margin-bottom:3px;transition:all 0.15s}
-.chk-item:last-child{margin-bottom:0}
 .chk-item.paid{background:rgba(0,200,150,0.04);border-color:rgba(0,200,150,0.12)}
 .chk-item:not(.paid){background:rgba(255,255,255,0.02);border-color:var(--border)}
 .chk-dot{width:17px;height:17px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
@@ -74,7 +70,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:32p
 @media(max-width:700px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
 .kpi{padding:20px 22px}
 .kpi-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--fg3);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:12px}
-.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:700;letter-spacing:-0.01em;line-height:1}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;letter-spacing:-0.01em;line-height:1}
 .kpi-sub{font-size:11px;color:var(--fg3);margin-top:7px;font-family:'DM Mono',monospace}
 .kpi-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:3px 9px;border-radius:4px;margin-top:10px;letter-spacing:0.08em;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif}
 .bb-pos{background:var(--pos-d);color:var(--pos);border:1px solid rgba(0,200,150,0.25)}
@@ -91,15 +87,14 @@ header{display:flex;justify-content:space-between;align-items:center;padding:32p
 .black-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .bi-l{font-size:9px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;font-family:'DM Mono',monospace}
 .bi-v{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;line-height:1}
-@media(max-width:600px){.black-grid{grid-template-columns:repeat(2,1fr)}}
 .acc{padding:18px 20px}
 .acc-bank{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;margin-bottom:2px}
 .acc-name{font-size:11px;color:var(--fg3);margin-bottom:12px}
 .acc-bal{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1}
 .acc-role{font-size:9px;color:var(--fg4);margin-top:6px;text-transform:uppercase;letter-spacing:0.1em;font-family:'DM Mono',monospace}
-.acc-prod{border-color:rgba(0,200,150,0.18)}.acc-prod:hover{border-color:var(--prod-bb)}
-.acc-pich{border-color:rgba(245,197,24,0.18)}.acc-pich:hover{border-color:var(--pich-bb)}
-.acc-guay{border-color:rgba(0,212,212,0.18)}.acc-guay:hover{border-color:var(--guay-bb)}
+.acc-prod{border-color:rgba(0,200,150,0.18)}.acc-prod:hover{border-color:rgba(0,200,150,0.35)}
+.acc-pich{border-color:rgba(245,197,24,0.18)}.acc-pich:hover{border-color:rgba(245,197,24,0.35)}
+.acc-guay{border-color:rgba(0,212,212,0.18)}.acc-guay:hover{border-color:rgba(0,212,212,0.35)}
 .cat-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
 .cat-row:last-child{border-bottom:none}
 .cat-name{font-size:12px;color:var(--fg2);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -115,6 +110,11 @@ header{display:flex;justify-content:space-between;align-items:center;padding:32p
 .txn-amt{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;flex-shrink:0}
 .src{font-size:8px;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,0.04);color:var(--fg4);border:1px solid var(--border);margin-left:5px;font-family:'DM Mono',monospace}
 .badge-maxi{font-size:8px;padding:2px 6px;border-radius:3px;background:rgba(0,200,150,0.08);color:var(--prod);border:1px solid rgba(0,200,150,0.2);margin-left:5px;font-family:'DM Mono',monospace}
+.badge-bank{font-size:8px;padding:2px 6px;border-radius:3px;margin-left:4px;font-family:'DM Mono',monospace;font-weight:500}
+.bank-prod{background:rgba(0,200,150,0.08);color:var(--prod);border:1px solid rgba(0,200,150,0.2)}
+.bank-pich{background:rgba(245,197,24,0.08);color:var(--pich);border:1px solid rgba(245,197,24,0.2)}
+.bank-guay{background:rgba(0,212,212,0.08);color:var(--guay);border:1px solid rgba(0,212,212,0.2)}
+.bank-unk{background:rgba(255,255,255,0.04);color:var(--fg4);border:1px solid var(--border)}
 .sobre-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
 .sobre-row:last-child{border-bottom:none}
 .sobre-name{font-size:12px;color:var(--fg2);width:140px;flex-shrink:0}
@@ -122,18 +122,29 @@ header{display:flex;justify-content:space-between;align-items:center;padding:32p
 .sobre-fill{height:100%;border-radius:2px}
 .sobre-amt{font-size:10px;color:var(--fg3);width:90px;text-align:right;flex-shrink:0;font-family:'DM Mono',monospace}
 .loading{color:var(--fg3);font-size:11px;padding:80px 0;text-align:center;font-family:'DM Mono',monospace;letter-spacing:0.08em}
-.err{color:var(--neg);font-size:11px;padding:24px 0;font-family:'DM Mono',monospace}
-/* CUENTAS OPERATIVAS HIGHLIGHT */
 .op-cuentas{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
 .op-card{background:var(--s1);border-radius:12px;padding:16px 20px;position:relative;overflow:hidden;transition:border-color 0.2s}
 .op-card-pich{border:1px solid rgba(245,197,24,0.3)}
-.op-card-pich:hover{border-color:var(--pich-bb)}
 .op-card-prod{border:1px solid rgba(0,200,150,0.3)}
-.op-card-prod:hover{border-color:var(--prod-bb)}
 .op-bank{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;margin-bottom:2px}
 .op-name{font-size:10px;color:var(--fg3);margin-bottom:10px}
 .op-bal{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:700;line-height:1}
 .op-tag{font-size:8px;color:var(--fg4);margin-top:5px;text-transform:uppercase;letter-spacing:0.12em;font-family:'DM Mono',monospace}
+/* Pie chart */
+.pie-wrap{display:flex;gap:24px;align-items:center;padding:20px 22px}
+.pie-svg{flex-shrink:0}
+.pie-legend{flex:1;display:flex;flex-direction:column;gap:8px}
+.pie-leg-item{display:flex;align-items:center;gap:8px}
+.pie-leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.pie-leg-name{font-size:11px;color:var(--fg2);flex:1}
+.pie-leg-amt{font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:600;color:var(--fg2)}
+.pie-leg-pct{font-size:10px;color:var(--fg3);font-family:'DM Mono',monospace;width:32px;text-align:right}
+/* Gastos breakdown */
+.gasto-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.gb-item{background:var(--s1);padding:16px 20px}
+.gb-label{font-size:9px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.12em;font-family:'DM Mono',monospace;margin-bottom:6px}
+.gb-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700}
+.gb-sub{font-size:10px;color:var(--fg3);margin-top:3px;font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
@@ -176,8 +187,38 @@ const H={apikey:SK,Authorization:'Bearer '+SK};
 const q=p=>fetch(SB+'/rest/v1/'+p,{headers:H}).then(r=>r.json());
 const $f=n=>parseFloat(n||0);
 const fmt=n=>'$'+$f(n).toFixed(2);
-const fmtK=n=>{const v=$f(n);return v>=1000?'$'+(v/1000).toFixed(1)+'k':fmt(v)};
+const fmtFull=n=>{const v=$f(n);return '$'+v.toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2})};
 const pct=(a,b)=>b>0?Math.min(100,a/b*100):0;
+
+const PIE_COLORS=['#00C896','#FF4D6D','#F5C518','#8BA7FF','#00D4D4','#FF8C42','#C084FC','#34D399','#F87171','#60A5FA','#FBBF24','#A78BFA'];
+
+function buildPie(cats, total, size=160){
+  if(!cats.length) return '<svg width="'+size+'" height="'+size+'"></svg>';
+  let angle=-Math.PI/2;
+  const cx=size/2,cy=size/2,r=size/2-8,ri=r*0.55;
+  let paths='';
+  cats.forEach((c,i)=>{
+    const slice=c[1]/total*Math.PI*2;
+    const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+    const x2=cx+r*Math.cos(angle+slice),y2=cy+r*Math.sin(angle+slice);
+    const xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle);
+    const xi2=cx+ri*Math.cos(angle+slice),yi2=cy+ri*Math.sin(angle+slice);
+    const large=slice>Math.PI?1:0;
+    const col=PIE_COLORS[i%PIE_COLORS.length];
+    paths+=`<path d="M${xi1},${yi1} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} L${xi2},${yi2} A${ri},${ri} 0 ${large},0 ${xi1},${yi1}" fill="${col}" opacity="0.9"/>`;
+    angle+=slice;
+  });
+  return `<svg class="pie-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${paths}<circle cx="${cx}" cy="${cy}" r="${ri-2}" fill="var(--s1)"/></svg>`;
+}
+
+function bankBadge(banco){
+  if(!banco) return '';
+  const b=banco.toLowerCase();
+  if(b.includes('produbanco')) return `<span class="badge-bank bank-prod">Produbanco</span>`;
+  if(b.includes('pichincha')) return `<span class="badge-bank bank-pich">Pichincha</span>`;
+  if(b.includes('guayaquil')) return `<span class="badge-bank bank-guay">Guayaquil</span>`;
+  return `<span class="badge-bank bank-unk">${banco}</span>`;
+}
 
 async function load(){
   document.getElementById('ts').textContent='// actualizando...';
@@ -186,8 +227,8 @@ async function load(){
     const mes=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
     const mesLabel=now.toLocaleDateString('es-EC',{month:'long',year:'numeric'});
     const [accs,txns,ccs,envs,chk]=await Promise.all([
-      q('accounts?select=id,name,bank,role,balance&order=bank'),
-      q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc&select=*,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
+      q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
+      q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=*,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
       q('envelopes?month=eq.'+mes+'&status=eq.active&select=*'),
       q('monthly_expense_status?month=eq.'+mes+'&select=*,fixed_expenses!expense_id(name,amount,category)&order=status.asc')
@@ -198,10 +239,12 @@ async function load(){
     const E=Array.isArray(envs)?envs:[];
     const CHK=Array.isArray(chk)?chk:[];
 
-    // SOLO gastos reales
-    const gastos=T.filter(t=>t.type==='gasto');
+    const gastosDirect=T.filter(t=>t.type==='gasto');
+    const pagosTarjeta=T.filter(t=>t.type==='pago_tarjeta');
     const ingresos=T.filter(t=>['ingreso','ingreso_variable'].includes(t.type));
-    const tG=$f(gastos.reduce((s,t)=>s+$f(t.amount),0));
+    const tGDirect=$f(gastosDirect.reduce((s,t)=>s+$f(t.amount),0));
+    const tGTarjeta=$f(pagosTarjeta.reduce((s,t)=>s+$f(t.amount),0));
+    const tG=tGDirect+tGTarjeta;
     const tI=$f(ingresos.reduce((s,t)=>s+$f(t.amount),0));
     const tasaAhorro=tI>0?((tI-tG)/tI*100):0;
     const presupuesto=1049;
@@ -220,17 +263,13 @@ async function load(){
     const bDeuda=$f(black.previous_cycle_debt);
     const bCiclo=$f(black.current_cycle_spent);
     const bTotal=$f(black.total_to_provision);
-    const day=now.getDate();
-    const bDias=black.days_until_cutoff!=null?parseInt(black.days_until_cutoff):(20-day);
-    const bCut=black.next_cut_date?new Date(black.next_cut_date).toLocaleDateString('es-EC',{day:'numeric',month:'short'}):('15 de cada mes');
-    const bPago=black.payment_due_date?new Date(black.payment_due_date).toLocaleDateString('es-EC',{day:'numeric',month:'short'}):('1 de cada mes');
+    const bDias=black.days_until_cutoff!=null?parseInt(black.days_until_cutoff):(20-now.getDate());
+    const bCut=black.next_cut_date?new Date(black.next_cut_date).toLocaleDateString('es-EC',{day:'numeric',month:'short'}):('14 jun');
+    const bPago=black.payment_due_date?new Date(black.payment_due_date).toLocaleDateString('es-EC',{day:'numeric',month:'short'}):('31 may');
 
-    // DISPONIBLE REAL = Pichincha Corriente + Produbanco Corriente - Black total a pagar
     const saldoPich=$f(opPich.balance);
     const saldoProd=$f(recep.balance);
     const disponible=saldoPich+saldoProd;
-
-    // PATRIMONIO TOTAL = suma de todas las cuentas
     const patrimonio=A.reduce((s,a)=>s+$f(a.balance),0);
 
     const pagados=CHK.filter(c=>c.status==='pagado');
@@ -242,12 +281,13 @@ async function load(){
     const feMeta=presupuesto*6;
     const fePct=pct(feSaldo,feMeta);
 
+    // Categorías — solo gastos directos (sin pago tarjeta)
     const catMap={};
-    gastos.forEach(t=>{const c=t.categories?.name||'Sin categoría';catMap[c]=(catMap[c]||0)+$f(t.amount)});
-    const topCats=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    gastosDirect.forEach(t=>{const c=t.categories?.name||'Sin categoría';catMap[c]=(catMap[c]||0)+$f(t.amount)});
+    const topCats=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const maxC=topCats[0]?topCats[0][1]:1;
 
-    // CHECKLIST PANEL
+    // CHECKLIST
     document.getElementById('chk-stats').textContent=`${pagados.length} / ${CHK.length}`;
     document.getElementById('chk-prog').style.width=chkPct+'%';
     document.getElementById('chk-pagado').textContent=fmt(tPagado);
@@ -256,86 +296,105 @@ async function load(){
     [...pendientes,...pagados].forEach(c=>{
       const fe=c.fixed_expenses||{};
       const done=c.status==='pagado';
-      chkHtml+=`<div class="chk-item ${done?'paid':''}">
-        <div class="chk-dot ${done?'dot-ok':'dot-pend'}">${done?'✓':'○'}</div>
-        <span class="chk-name">${fe.name||'Gasto'}</span>
-        <span class="chk-val">${fmt(fe.amount||0)}</span>
-      </div>`;
+      chkHtml+=`<div class="chk-item ${done?'paid':''}"><div class="chk-dot ${done?'dot-ok':'dot-pend'}">${done?'✓':'○'}</div><span class="chk-name">${fe.name||'Gasto'}</span><span class="chk-val">${fmt(fe.amount||0)}</span></div>`;
     });
     document.getElementById('chk-list').innerHTML=chkHtml;
 
-    // MAIN COL
     let html='';
-
     html+=`<p class="sl">resumen · ${mesLabel}</p>`;
 
-    // KPIs principales — 4 tarjetas
+    // KPIs — números completos
     html+=`<div class="g4" style="margin-bottom:12px">`;
-    html+=`<div class="g kpi"><div class="at at-prod"></div><p class="kpi-label">Ingresos</p><p class="kpi-val c-pos">${fmtK(tI)}</p><p class="kpi-sub">este mes</p></div>`;
-    html+=`<div class="g kpi"><div class="at at-neg"></div><p class="kpi-label">Gastos</p><p class="kpi-val c-neg">${fmtK(tG)}</p><p class="kpi-sub">${pctG.toFixed(0)}% del presupuesto</p><div class="pb"><div class="pb-fill" style="width:${Math.min(100,pctG)}%;background:${pctG>90?'var(--neg)':pctG>70?'var(--warn)':'var(--pos)'}"></div></div></div>`;
-    html+=`<div class="g kpi"><div class="at at-warn"></div><p class="kpi-label">Disponible</p><p class="kpi-val ${disponible>=0?'c-pos':'c-neg'}">${fmtK(disponible)}</p><p class="kpi-sub" style="font-size:9px">Pich+Prod − Black</p><span class="kpi-badge ${disponible>=0?'bb-pos':'bb-neg'}">${disponible>=0?'↑ positivo':'↓ negativo'}</span></div>`;
+    html+=`<div class="g kpi"><div class="at at-prod"></div><p class="kpi-label">Ingresos</p><p class="kpi-val c-pos">${fmtFull(tI)}</p><p class="kpi-sub">este mes</p></div>`;
+    html+=`<div class="g kpi"><div class="at at-neg"></div><p class="kpi-label">Gastos totales</p><p class="kpi-val c-neg">${fmtFull(tG)}</p><p class="kpi-sub">${pctG.toFixed(0)}% del presupuesto</p><div class="pb"><div class="pb-fill" style="width:${Math.min(100,pctG)}%;background:${pctG>90?'var(--neg)':pctG>70?'var(--warn)':'var(--pos)'}"></div></div></div>`;
+    html+=`<div class="g kpi"><div class="at at-warn"></div><p class="kpi-label">Disponible</p><p class="kpi-val ${disponible>=0?'c-pos':'c-neg'}">${fmtFull(disponible)}</p><p class="kpi-sub" style="font-size:9px">Pich + Prod corriente</p><span class="kpi-badge ${disponible>=0?'bb-pos':'bb-neg'}">${disponible>=0?'↑ positivo':'↓ negativo'}</span></div>`;
     html+=`<div class="g kpi"><p class="kpi-label">Tasa de ahorro</p><p class="kpi-val ${tasaAhorro>=10?'c-pos':tasaAhorro>=5?'c-warn':'c-neg'}">${tasaAhorro.toFixed(1)}%</p><span class="kpi-badge ${tasaAhorro>=10?'bb-pos':tasaAhorro>=5?'bb-warn':'bb-neg'}">${tasaAhorro>=10?'saludable':tasaAhorro>=5?'revisar':'atención'}</span></div>`;
     html+=`</div>`;
 
-    // Cuentas operativas destacadas
+    // Desglose gastos
+    html+=`<div class="g" style="margin-bottom:10px;overflow:hidden"><div class="gasto-breakdown">`;
+    html+=`<div class="gb-item"><p class="gb-label">Gastos directos</p><p class="gb-val c-neg">${fmtFull(tGDirect)}</p><p class="gb-sub">compras, servicios, comida</p></div>`;
+    html+=`<div class="gb-item"><p class="gb-label">Pago tarjeta Black</p><p class="gb-val c-warn">${fmtFull(tGTarjeta)}</p><p class="gb-sub">liquidación ciclo anterior</p></div>`;
+    html+=`</div></div>`;
+
+    // Cuentas operativas
     html+=`<div class="op-cuentas">`;
-    html+=`<div class="op-card op-card-pich"><div class="at at-pich"></div><p class="op-bank c-pich">Pichincha</p><p class="op-name">Corriente · Operativa</p><p class="op-bal c-pich">${fmt(saldoPich)}</p><p class="op-tag">disponible inmediato</p></div>`;
-    html+=`<div class="op-card op-card-prod"><div class="at at-prod"></div><p class="op-bank c-prod">Produbanco</p><p class="op-name">Corriente · Black</p><p class="op-bal c-prod">${fmt(saldoProd)}</p><p class="op-tag">disponible inmediato</p></div>`;
+    html+=`<div class="op-card op-card-pich"><div class="at at-pich"></div><p class="op-bank c-pich">Pichincha</p><p class="op-name">Corriente · Operativa</p><p class="op-bal c-pich">${fmtFull(saldoPich)}</p><p class="op-tag">disponible inmediato</p></div>`;
+    html+=`<div class="op-card op-card-prod"><div class="at at-prod"></div><p class="op-bank c-prod">Produbanco</p><p class="op-name">Corriente · Black</p><p class="op-bal c-prod">${fmtFull(saldoProd)}</p><p class="op-tag">disponible inmediato</p></div>`;
     html+=`</div>`;
 
+    // Tarjeta Black
     html+=`<p class="sl">tarjeta black · Produbanco</p>`;
     html+=`<div class="g" style="margin-bottom:20px;border-color:rgba(0,200,150,0.15)"><div class="at at-prod"></div><div class="black-wrap">
       <div class="black-top"><span class="black-name">BLACK MASTERCARD 💳</span><span class="black-chip">${Math.max(0,bDias)}d para corte · ${bCut}</span></div>
       <div class="black-grid">
-        <div><p class="bi-l">Deuda anterior</p><p class="bi-v c-warn">${fmtK(bDeuda)}</p></div>
-        <div><p class="bi-l">Ciclo actual</p><p class="bi-v c-info">${fmtK(bCiclo)}</p></div>
-        <div><p class="bi-l">Total a pagar</p><p class="bi-v ${bTotal>500?'c-neg':bTotal>300?'c-warn':'c-pos'}">${fmtK(bTotal)}</p></div>
+        <div><p class="bi-l">Deuda anterior</p><p class="bi-v c-warn">${fmtFull(bDeuda)}</p></div>
+        <div><p class="bi-l">Ciclo actual</p><p class="bi-v c-info">${fmtFull(bCiclo)}</p></div>
+        <div><p class="bi-l">Total a pagar</p><p class="bi-v ${bTotal>500?'c-neg':bTotal>300?'c-warn':'c-pos'}">${fmtFull(bTotal)}</p></div>
         <div><p class="bi-l">Fecha pago</p><p class="bi-v" style="font-size:18px;color:var(--fg)">${bPago}</p></div>
       </div>
-      <div class="pb" style="margin-top:18px"><div class="pb-fill" style="width:${Math.min(100,pct(bDeuda,1049))}%;background:${bDeuda>400?'var(--neg)':bDeuda>250?'var(--warn)':'var(--prod)'}"></div></div>
-      <p style="font-size:9px;color:var(--fg4);margin-top:6px;font-family:'DM Mono',monospace">deuda vs ingreso mensual $${presupuesto}</p>
+      <div class="pb" style="margin-top:18px"><div class="pb-fill" style="width:${Math.min(100,pct(bDeuda,presupuesto))}%;background:${bDeuda>400?'var(--neg)':bDeuda>250?'var(--warn)':'var(--prod)'}"></div></div>
+      <p style="font-size:9px;color:var(--fg4);margin-top:6px;font-family:'DM Mono',monospace">deuda vs ingreso mensual ${fmtFull(presupuesto)}</p>
     </div></div>`;
 
+    // KPIs financieros
     html+=`<p class="sl">kpis financieros</p>`;
     html+=`<div class="g4" style="margin-bottom:20px">`;
-    html+=`<div class="g kpi"><p class="kpi-label">Fondo emergencia</p><p class="kpi-val ${fePct>=50?'c-pos':fePct>=25?'c-warn':'c-neg'}">${fePct.toFixed(1)}%</p><p class="kpi-sub">${fmt(feSaldo)} de ${fmt(feMeta)}</p><div class="pb"><div class="pb-fill" style="width:${fePct}%;background:${fePct>=50?'var(--pos)':fePct>=25?'var(--warn)':'var(--neg)'}"></div></div></div>`;
-    html+=`<div class="g kpi"><p class="kpi-label">Gastos fijos</p><p class="kpi-val ${chkPct>=80?'c-pos':chkPct>=50?'c-warn':'c-neg'}">${pagados.length}<span style="font-size:18px;font-weight:400;color:var(--fg3)"> / ${CHK.length}</span></p><p class="kpi-sub">${fmt(tPagado)} de ${fmt(tFijos)}</p><div class="pb"><div class="pb-fill" style="width:${chkPct}%;background:${chkPct>=80?'var(--pos)':chkPct>=50?'var(--warn)':'var(--neg)'}"></div></div></div>`;
+    html+=`<div class="g kpi"><p class="kpi-label">Fondo emergencia</p><p class="kpi-val ${fePct>=50?'c-pos':fePct>=25?'c-warn':'c-neg'}">${fePct.toFixed(1)}%</p><p class="kpi-sub">${fmtFull(feSaldo)} de ${fmtFull(feMeta)}</p><div class="pb"><div class="pb-fill" style="width:${fePct}%;background:${fePct>=50?'var(--pos)':fePct>=25?'var(--warn)':'var(--neg)'}"></div></div></div>`;
+    html+=`<div class="g kpi"><p class="kpi-label">Gastos fijos</p><p class="kpi-val ${chkPct>=80?'c-pos':chkPct>=50?'c-warn':'c-neg'}">${pagados.length}<span style="font-size:18px;font-weight:400;color:var(--fg3)"> / ${CHK.length}</span></p><p class="kpi-sub">${fmtFull(tPagado)} de ${fmtFull(tFijos)}</p><div class="pb"><div class="pb-fill" style="width:${chkPct}%;background:${chkPct>=80?'var(--pos)':chkPct>=50?'var(--warn)':'var(--neg)'}"></div></div></div>`;
     html+=`<div class="g kpi"><p class="kpi-label">Transacciones</p><p class="kpi-val c-info">${T.length}</p><p class="kpi-sub">Auto: ${T.filter(t=>t.source==='gmail').length} · Manual: ${T.filter(t=>t.source==='telegram').length}</p></div>`;
-    html+=`<div class="g kpi"><div class="at at-info"></div><p class="kpi-label">Patrimonio total</p><p class="kpi-val c-info">${fmtK(patrimonio)}</p><p class="kpi-sub">todas las cuentas</p></div>`;
+    html+=`<div class="g kpi"><div class="at at-info"></div><p class="kpi-label">Patrimonio total</p><p class="kpi-val c-info">${fmtFull(patrimonio)}</p><p class="kpi-sub">todas las cuentas</p></div>`;
     html+=`</div>`;
 
+    // Cuentas Produbanco
     html+=`<p class="sl">cuentas · Produbanco</p>`;
     html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">`;
     [{a:recep,label:'BLACK 💳'},{a:opProd,label:'Fondo emergencia'},{a:flexi,label:'Diferidos acumulados'}].forEach(({a,label})=>{
-      html+=`<div class="g acc acc-prod"><div class="at at-prod"></div><p class="acc-bank c-prod">Produbanco</p><p class="acc-name">${a.name||'-'}</p><p class="acc-bal c-prod">${fmt(a.balance)}</p><p class="acc-role">${label}</p></div>`;
+      html+=`<div class="g acc acc-prod"><div class="at at-prod"></div><p class="acc-bank c-prod">Produbanco</p><p class="acc-name">${a.name||'-'}</p><p class="acc-bal c-prod">${fmtFull(a.balance)}</p><p class="acc-role">${label}</p></div>`;
     });
     html+=`</div>`;
 
     html+=`<p class="sl">cuentas · Pichincha</p>`;
     html+=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px">`;
     [{a:opPich,label:'Operativa DeUna'},{a:ahorPich,label:'Ahorro con propósito'}].forEach(({a,label})=>{
-      html+=`<div class="g acc acc-pich"><div class="at at-pich"></div><p class="acc-bank c-pich">Pichincha</p><p class="acc-name">${a.name||'-'}</p><p class="acc-bal c-pich">${fmt(a.balance)}</p><p class="acc-role">${label}</p></div>`;
+      html+=`<div class="g acc acc-pich"><div class="at at-pich"></div><p class="acc-bank c-pich">Pichincha</p><p class="acc-name">${a.name||'-'}</p><p class="acc-bal c-pich">${fmtFull(a.balance)}</p><p class="acc-role">${label}</p></div>`;
     });
     html+=`</div>`;
 
     html+=`<p class="sl">cuentas · Guayaquil</p>`;
     html+=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px">`;
     [{a:inv,label:'Inversión mensual'},{a:metas,label:'Metas'}].forEach(({a,label})=>{
-      html+=`<div class="g acc acc-guay"><div class="at at-guay"></div><p class="acc-bank c-guay">Guayaquil</p><p class="acc-name">${a.name||'-'}</p><p class="acc-bal c-guay">${fmt(a.balance)}</p><p class="acc-role">${label}</p></div>`;
+      html+=`<div class="g acc acc-guay"><div class="at at-guay"></div><p class="acc-bank c-guay">Guayaquil</p><p class="acc-name">${a.name||'-'}</p><p class="acc-bal c-guay">${fmtFull(a.balance)}</p><p class="acc-role">${label}</p></div>`;
     });
     html+=`</div>`;
 
+    // Gráficos: categorías + transacciones
     html+=`<div class="g2" style="margin-bottom:20px;align-items:start">`;
+
+    // Categorías con pastel
     html+=`<div>`;
     if(topCats.length>0){
-      html+=`<p class="sl">gastos por categoría</p><div class="g" style="padding:16px 20px">`;
+      html+=`<p class="sl">gastos por categoría</p>`;
+      html+=`<div class="g"><div class="pie-wrap">`;
+      html+=buildPie(topCats,tGDirect);
+      html+=`<div class="pie-legend">`;
+      topCats.forEach((c,i)=>{
+        const p2=tGDirect>0?(c[1]/tGDirect*100):0;
+        html+=`<div class="pie-leg-item"><div class="pie-leg-dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></div><span class="pie-leg-name">${c[0]}</span><span class="pie-leg-amt">${fmt(c[1])}</span><span class="pie-leg-pct">${p2.toFixed(0)}%</span></div>`;
+      });
+      html+=`</div></div>`;
+      // Barras también
+      html+=`<div style="padding:0 20px 16px">`;
       topCats.forEach(([cat,amt])=>{
         html+=`<div class="cat-row"><span class="cat-name">${cat}</span><div class="cat-bar"><div class="cat-fill" style="width:${pct(amt,maxC)}%"></div></div><span class="cat-amt">${fmt(amt)}</span></div>`;
       });
-      html+=`</div>`;
+      html+=`</div></div>`;
     }
-    html+=`</div><div>`;
-    const recTxn=T.slice(0,8);
+    html+=`</div>`;
+
+    // Transacciones recientes con banco
+    html+=`<div>`;
+    const recTxn=T.slice(0,10);
     if(recTxn.length>0){
       html+=`<p class="sl">últimas transacciones</p><div class="g" style="padding:4px 0">`;
       recTxn.forEach(t=>{
@@ -344,8 +403,8 @@ async function load(){
         const cat=t.categories?.name||t.type;
         const banco=t.accounts?.bank||'';
         html+=`<div class="txn"><div class="txn-l">
-          <span class="txn-desc">${t.description||cat}${isMaxi?'<span class="badge-maxi">maxidólares</span>':'<span class="src">'+t.source+'</span>'}</span>
-          <span class="txn-meta">${cat}${banco?' · '+banco:''} · ${t.transaction_date}</span>
+          <span class="txn-desc">${t.description||cat}${isMaxi?'<span class="badge-maxi">maxidólares</span>':''}${bankBadge(banco)}<span class="src">${t.source}</span></span>
+          <span class="txn-meta">${cat} · ${t.transaction_date}</span>
         </div><span class="txn-amt ${isMaxi?'c-prod':isG?'c-neg':'c-pos'}">${isMaxi?'~':isG?'−':'+'}${fmt(t.amount)}</span></div>`;
       });
       html+=`</div>`;
@@ -361,11 +420,10 @@ async function load(){
       html+=`</div>`;
     }
 
-    html+=`<div style="height:48px"></div>`;
     document.getElementById('main').innerHTML=html;
     document.getElementById('ts').textContent=`// ${now.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'})} · ${mesLabel}`;
   }catch(err){
-    document.getElementById('main').innerHTML=`<p class="err">// error: ${err.message}</p>`;
+    document.getElementById('main').innerHTML=`<p style="color:var(--neg);font-family:'DM Mono',monospace;padding:24px">// error: ${err.message}</p>`;
     document.getElementById('ts').textContent='// error';
     console.error(err);
   }
