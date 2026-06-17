@@ -437,7 +437,6 @@ function cancelEditBalance(elId){
   const el=document.getElementById(elId);
   if(el && _balOrig[elId]) el.innerHTML=_balOrig[elId];
 }
-}
 
 async function saveBalance(accId, elId, colorClass){
   const inp=document.getElementById('inp-bal-'+accId);
