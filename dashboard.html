@@ -525,13 +525,21 @@ async function saveTxn(){
     is_verified:true
   };
   try{
-    let r;
+    // Si edición: revertir balance anterior primero
     if(id){
-      r=await fetch(`${SB}/rest/v1/transactions?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      await fetch(`${SB}/rest/v1/rpc/revert_transaction`,{method:'POST',headers:H,body:JSON.stringify({p_transaction_id:id})});
+      const r=await fetch(`${SB}/rest/v1/transactions?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok){const e=await r.text();throw new Error(e);}
     } else {
-      r=await fetch(`${SB}/rest/v1/transactions`,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      const r=await fetch(`${SB}/rest/v1/transactions`,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok){const e=await r.text();throw new Error(e);}
     }
-    if(!r.ok){const e=await r.text();throw new Error(e);}
+    // Aplicar balance nuevo
+    if(body.type==='transferencia'&&body.account_id&&body.transfer_to_account_id){
+      await fetch(`${SB}/rest/v1/rpc/transfer_between_accounts`,{method:'POST',headers:H,body:JSON.stringify({p_from_account_id:body.account_id,p_to_account_id:body.transfer_to_account_id,p_amount:body.amount})});
+    } else if(body.account_id){
+      await fetch(`${SB}/rest/v1/rpc/update_account_balance`,{method:'POST',headers:H,body:JSON.stringify({p_account_id:body.account_id,p_amount:body.amount,p_type:body.type,p_is_credit_card:body.is_credit_card||false})});
+    }
     closeModal('modal-txn');
     toast(id?'✓ Transacción actualizada':'✓ Transacción creada');
     setTimeout(load,500);
@@ -753,13 +761,14 @@ async function load(){
     const now=new Date();
     const mes=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
     const mesLabel=now.toLocaleDateString('es-EC',{month:'long',year:'numeric'});
-    const [accs,txns,ccs,envs,chk,gfs]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
       q('envelopes?month=eq.'+mes+'&status=eq.active&select=*'),
       q('monthly_expense_status?month=eq.'+mes+'&select=*,fixed_expenses!expense_id(name,amount,category)&order=status.asc'),
-      q('fixed_expenses?select=id,name,amount,frequency,day_of_month,is_active,is_credit_card,category&order=category,amount.desc')
+      q('fixed_expenses?select=id,name,amount,frequency,day_of_month,is_active,is_credit_card,category&order=category,amount.desc'),
+      q('accounts?role=eq.tarjeta_diners&select=id,name,balance,credit_card_balance')
     ]);
     const T=Array.isArray(txns)?txns:[];
     const A=Array.isArray(accs)?accs:[];
@@ -767,6 +776,9 @@ async function load(){
     const E=Array.isArray(envs)?envs:[];
     const CHK=Array.isArray(chk)?chk:[];
     const GFS=Array.isArray(gfs)?gfs:[];
+    const DINERS=Array.isArray(dinersAcc)&&dinersAcc.length>0?dinersAcc[0]:null;
+    const dBalance=$f(DINERS?.credit_card_balance||DINERS?.balance||0);
+    const dId=DINERS?.id||"9b3b1c66-4661-4a0c-bc9c-994995aba043";
     _allTxns=T; _accs=A;
 
     const gastosDirect=T.filter(t=>t.type==='gasto');
@@ -884,6 +896,24 @@ async function load(){
       </div>
       <div class="pb" style="margin-top:18px"><div class="pb-fill" style="width:${Math.min(100,pct(bDeuda,presupuesto))}%;background:${bDeuda>400?'var(--neg)':bDeuda>250?'var(--warn)':'var(--prod)'}"></div></div>
       <p style="font-size:9px;color:var(--fg4);margin-top:6px;font-family:'DM Mono',monospace">deuda vs ingreso mensual ${fmtFull(presupuesto)}</p>
+    </div></div>`;
+
+
+    // ── Diners Club Miles ──────────────────────────────────────
+    html+=`<p class="sl">tarjeta diners · Diners Club</p>`;
+    html+=`<div class="g" style="margin-bottom:20px;border-color:rgba(200,165,96,0.15)"><div class="at at-warn"></div><div class="black-wrap">
+      <div class="black-top">
+        <span class="black-name" style="color:var(--brass)">DINERS CLUB MILES ✈️</span>
+        <span class="black-chip">Corte dia 15 · Pago hasta dia 1</span>
+      </div>
+      <div class="black-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div><p class="bi-l">Consumos ciclo</p>
+          <p class="bi-v ${dBalance>800?'c-neg':dBalance>400?'c-warn':'c-pos'}" style="cursor:pointer" title="Click para editar" onclick="editBlackBalance(${dBalance},'${dId}')">${fmtFull(dBalance)}</p>
+        </div>
+        <div><p class="bi-l">Corte</p><p class="bi-v" style="font-size:20px;color:var(--fg)">Dia 15</p></div>
+        <div><p class="bi-l">Pago hasta</p><p class="bi-v" style="font-size:20px;color:var(--fg)">Dia 1</p></div>
+      </div>
+      <p style="font-size:9px;color:var(--fg4);margin-top:10px;font-family:'DM Mono',monospace">click en monto para editar manualmente</p>
     </div></div>`;
 
     // KPIs financieros
