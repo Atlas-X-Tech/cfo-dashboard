@@ -669,10 +669,8 @@ async function saveTxn(){
   if(!amount){document.getElementById('txn-amount').classList.add('error');valid=false;}
   if(!accountId){document.getElementById('txn-account').classList.add('error');valid=false;}
   if(!valid){toast('Completa los campos requeridos','err');return;}
-
   const btn=document.getElementById('btn-save-txn');
   btn.disabled=true;btn.textContent='Guardando...';
-
   const dateVal=document.getElementById('txn-date').value;
   const body={
     type:document.getElementById('txn-type').value,
@@ -687,23 +685,23 @@ async function saveTxn(){
     source:'dashboard',
     is_verified:true
   };
-
   try{
     if(id){
       const rv=await fetch(`${SB}/rest/v1/rpc/revert_transaction`,{method:'POST',headers:H,body:JSON.stringify({p_transaction_id:id})});
       if(!rv.ok){const e=await rv.text();throw new Error('Revert: '+e);}
-      const r=await fetch(`${SB}/rest/v1/transactions?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
-      if(!r.ok){const e=await r.text();throw new Error('Update: '+e);}
+      const r=await fetch(`${SB}/rest/v1/transactions`,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify(body)});
+      if(!r.ok){const e=await r.text();throw new Error('Re-insert: '+e);}
+      const ins=await r.json();
+      if(!Array.isArray(ins)||ins.length===0) throw new Error('No se creó la transacción editada');
     } else {
       const r=await fetch(`${SB}/rest/v1/transactions`,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify(body)});
       if(!r.ok){const e=await r.text();throw new Error('Insert: '+e);}
-      const inserted=await r.json();
-      if(!Array.isArray(inserted)||inserted.length===0) throw new Error('No se insertó la transacción');
+      const ins=await r.json();
+      if(!Array.isArray(ins)||ins.length===0) throw new Error('No se insertó la transacción');
     }
-    // Actualizar balance
     if(body.type==='transferencia'&&body.account_id&&body.transfer_to_account_id){
       const rb=await fetch(`${SB}/rest/v1/rpc/transfer_between_accounts`,{method:'POST',headers:H,body:JSON.stringify({p_from_account_id:body.account_id,p_to_account_id:body.transfer_to_account_id,p_amount:body.amount})});
-      if(!rb.ok){const e=await rb.text();throw new Error('Transfer balance: '+e);}
+      if(!rb.ok){const e=await rb.text();throw new Error('Transfer: '+e);}
     } else {
       const rb=await fetch(`${SB}/rest/v1/rpc/update_account_balance`,{method:'POST',headers:H,body:JSON.stringify({p_account_id:body.account_id,p_amount:body.amount,p_type:body.type,p_is_credit_card:body.is_credit_card||false})});
       if(!rb.ok){const e=await rb.text();throw new Error('Balance: '+e);}
@@ -717,7 +715,6 @@ async function saveTxn(){
     btn.disabled=false;btn.textContent='Guardar';
   }
 }
-
 function confirmDelete(txnId,desc){
   document.getElementById('confirm-msg').textContent=`¿Eliminar "${desc}"? El balance se revertirá automáticamente.`;
   document.getElementById('confirm-btn').onclick=()=>deleteTxn(txnId);
