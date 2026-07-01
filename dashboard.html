@@ -495,7 +495,7 @@ const fmtFull=n=>'$'+$f(n).toLocaleString('es-EC',{minimumFractionDigits:2,maxim
 const pct=(a,b)=>b>0?Math.min(100,a/b*100):0;
 const q=p=>fetch(SB+'/rest/v1/'+p,{headers:H}).then(r=>r.json());
 
-let _cats=[], _accs=[], _allTxns=[], _showAll=false, _filterAcc='', _balOrig={};
+let _cats=[], _accs=[], _allTxns=[], _histTxns=[], _showAll=false, _filterAcc='', _balOrig={};
 
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
@@ -938,8 +938,9 @@ async function load(){
     const mesLabel=now.toLocaleDateString('es-EC',{month:'long',year:'numeric'});
     const diasRestantes=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate();
     const cycle=getCycleRange();
+    const mesAnteriorInicio=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
 
-    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
@@ -949,7 +950,8 @@ async function load(){
       q('accounts?role=eq.tarjeta_diners&select=id,name,balance,credit_card_balance'),
       q('transactions?is_credit_card=eq.true&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('transactions?account_id=eq.9b3b1c66-4661-4a0c-bc9c-994995aba043&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
-      q('v_deferred_expenses?select=*')
+      q('v_deferred_expenses?select=*'),
+      q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -965,7 +967,7 @@ async function load(){
     const dBalance=$f(DINERS?.credit_card_balance||DINERS?.balance||0);
     const dId=DINERS?.id||'9b3b1c66-4661-4a0c-bc9c-994995aba043';
 
-    _allTxns=T;_accs=A;
+    _allTxns=T;_accs=A;_histTxns=Array.isArray(histTxns)?histTxns:[];
 
     const gastosDirect=T.filter(t=>t.type==='gasto');
     const pagosTarjeta=T.filter(t=>t.type==='pago_tarjeta');
@@ -1237,9 +1239,13 @@ async function load(){
     html+=`</div>`;
 
     html+=`<div>`;
-    html+=`<div class="sl-row"><span class="sl-label">transacciones del mes</span><button class="add-btn" onclick="openAddTxn()">+ Nueva</button></div>`;
+    html+=`<div class="sl-row"><span class="sl-label">transacciones</span><button class="add-btn" onclick="openAddTxn()">+ Nueva</button></div>`;
     const accOptions=A.map(a=>`<option value="${a.id}" ${_filterAcc===a.id?'selected':''}>${a.bank} · ${a.name}</option>`).join('');
     html+=`<div class="filter-bar">
+      <select class="filter-select" id="filter-period" onchange="renderTxnList()">
+        <option value="mes" style="background:#1A1F1B;color:var(--cream)">Este mes</option>
+        <option value="hist" style="background:#1A1F1B;color:var(--cream)">Mes anterior + este mes</option>
+      </select>
       <select class="filter-select" id="filter-acc" onchange="_filterAcc=this.value;renderTxnList()">
         <option value="" style="background:#1A1F1B;color:var(--cream)">Todas las cuentas</option>
         ${accOptions}
@@ -1254,7 +1260,7 @@ async function load(){
       </select>
     </div>`;
     html+=`<div class="g" style="padding:4px 0" id="txn-list"></div>`;
-    if(T.length>15) html+=`<div class="show-more"><button onclick="_showAll=!_showAll;renderTxnList()">${_showAll?'▲ Ver menos':'▼ Ver todas ('+T.length+')'}</button></div>`;
+    html+=`<div class="show-more" id="txn-showmore"></div>`;
     html+=`</div></div>`;
 
     // GF
@@ -1284,13 +1290,16 @@ async function load(){
 function renderTxnList(){
   const el=document.getElementById('txn-list');
   if(!el) return;
+  const periodFilter=document.getElementById('filter-period')?.value||'mes';
   const accFilter=document.getElementById('filter-acc')?.value||'';
   const typeFilter=document.getElementById('filter-type')?.value||'';
-  let filtered=_allTxns;
+  let filtered=periodFilter==='hist'?_histTxns:_allTxns;
   if(accFilter) filtered=filtered.filter(t=>t.account_id===accFilter);
   if(typeFilter) filtered=filtered.filter(t=>t.type===typeFilter);
   const visible=_showAll?filtered:filtered.slice(0,15);
   el.innerHTML=visible.map(renderTxnRow).join('')||'<p style="text-align:center;color:var(--fg4);font-size:10px;padding:20px;font-family:\'DM Mono\',monospace">Sin transacciones</p>';
+  const sm=document.getElementById('txn-showmore');
+  if(sm) sm.innerHTML=filtered.length>15?`<button onclick="_showAll=!_showAll;renderTxnList()">${_showAll?'▲ Ver menos':'▼ Ver todas ('+filtered.length+')'}</button>`:'';
 }
 
 load();
