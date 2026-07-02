@@ -1012,8 +1012,8 @@ async function load(){
     const efectivoEntradas=efectivoTxns.filter(t=>t.type==='ingreso'||t.type==='retiro_cajero').reduce((s,t)=>s+$f(t.amount),0);
     const efectivoSalidas=efectivoTxns.filter(t=>t.type==='gasto').reduce((s,t)=>s+$f(t.amount),0);
 
-    const pagados=CHK.filter(c=>c.status==='pagado');
-    const pendientes=CHK.filter(c=>c.status==='pendiente');
+    const pagados=CHK.filter(c=>c.status==='pagado').sort((a,b)=>new Date(a.paid_date||0)-new Date(b.paid_date||0));
+    const pendientes=CHK.filter(c=>c.status==='pendiente').sort((a,b)=>(a.fixed_expenses?.name||'').localeCompare(b.fixed_expenses?.name||''));
     const tPagado=pagados.reduce((s,c)=>s+$f(c.fixed_expenses?.amount),0);
     const tFijos=CHK.reduce((s,c)=>s+$f(c.fixed_expenses?.amount),0);
     const chkPct=pct(pagados.length,CHK.length);
