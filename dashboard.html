@@ -45,9 +45,9 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
 .btn-primary:hover{background:rgba(163,177,138,0.18);border-color:rgba(163,177,138,0.55)}
 .btn-sueldo{background:rgba(163,177,138,0.12);border:0.5px solid rgba(163,177,138,0.40);color:var(--olive);font-size:11px;padding:8px 18px;font-weight:700;letter-spacing:0.12em}
 .btn-sueldo:hover{background:rgba(163,177,138,0.22);border-color:rgba(163,177,138,0.65);color:var(--cream)}
-.layout{display:grid;grid-template-columns:1fr 272px;gap:20px;align-items:start;padding-top:4px}
+.layout{display:grid;grid-template-columns:1fr 272px;gap:20px;align-items:start;padding-top:4px;isolation:isolate}
 .main-col{min-width:0;position:relative;z-index:1}
-.side-col{position:sticky;top:24px;z-index:0}
+.side-col{position:sticky;top:24px;z-index:0;isolation:isolate}
 @media(max-width:960px){.layout{grid-template-columns:1fr}.side-col{position:static}}
 .modal-overlay{position:fixed;inset:0;background:rgba(10,13,11,0.72);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(14px)}
 .modal-overlay.open{display:flex}
