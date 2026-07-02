@@ -942,7 +942,7 @@ async function load(){
 
     const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
-      q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
+      q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
       q('envelopes?month=eq.'+mes+'&status=eq.active&select=*'),
       q('monthly_expense_status?month=eq.'+mes+'&select=*,fixed_expenses!expense_id(name,amount,category)&order=status.asc'),
@@ -951,7 +951,7 @@ async function load(){
       q('transactions?is_credit_card=eq.true&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('transactions?account_id=eq.9b3b1c66-4661-4a0c-bc9c-994995aba043&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('v_deferred_expenses?select=*'),
-      q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)')
+      q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -969,7 +969,7 @@ async function load(){
 
     _allTxns=T;_accs=A;_histTxns=Array.isArray(histTxns)?histTxns:[];
 
-    const gastosDirect=T.filter(t=>t.type==='gasto');
+    const gastosDirect=T.filter(t=>t.type==='gasto'||(t.type==='transferencia'&&!t.transfer_to_account_id));
     const pagosTarjeta=T.filter(t=>t.type==='pago_tarjeta');
     const ingresos=T.filter(t=>['ingreso','ingreso_variable'].includes(t.type));
     const tGDirect=$f(gastosDirect.reduce((s,t)=>s+$f(t.amount),0));
