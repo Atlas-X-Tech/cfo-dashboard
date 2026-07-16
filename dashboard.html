@@ -309,7 +309,7 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
       </div>
       <div class="form-row">
         <label class="form-label">¿Tarjeta Black?</label>
-        <select class="form-input" id="txn-credit">
+        <select class="form-input" id="txn-credit" onchange="onTxnCreditChange()">
           <option value="false">No</option>
           <option value="true">Sí (Black)</option>
         </select>
@@ -318,6 +318,9 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
     <div class="form-row transfer-field" id="transfer-dest-row">
       <label class="form-label">Cuenta destino</label>
       <select class="form-input" id="txn-to-account"><option value="">Selecciona cuenta destino…</option></select>
+    </div>
+    <div class="form-row" id="txn-diferir-row" style="display:none">
+      <button class="btn btn-primary" type="button" style="width:100%" onclick="diferirTxnActual()">📆 Diferir esta transacción a cuotas</button>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-txn')">Cancelar</button>
@@ -436,6 +439,144 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
   </div>
 </div>
 
+<!-- MODAL CUENTA -->
+<div class="modal-overlay" id="modal-cuenta">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-cuenta')">✕</button>
+    <p class="modal-title" id="modal-cuenta-title">Nueva Cuenta</p>
+    <input type="hidden" id="cuenta-edit-id">
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" type="text" id="cuenta-name" placeholder="Ej: Guayaquil Ahorro...">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Banco</label>
+        <input class="form-input" type="text" id="cuenta-bank" placeholder="Ej: Produbanco">
+      </div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Tipo</label>
+        <select class="form-input" id="cuenta-type">
+          <option value="corriente">Corriente</option>
+          <option value="ahorro">Ahorro</option>
+          <option value="tarjeta_credito">Tarjeta de crédito</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="inversion">Inversión</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Rol interno</label>
+        <input class="form-input" type="text" id="cuenta-role" placeholder="Ej: metas_terceros">
+      </div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Saldo inicial ($)</label>
+        <input class="form-input" type="number" step="0.01" id="cuenta-balance" placeholder="0.00">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Moneda</label>
+        <input class="form-input" type="text" id="cuenta-currency" value="USD">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Notas</label>
+      <input class="form-input" type="text" id="cuenta-notes" placeholder="Notas libres...">
+    </div>
+    <div class="divider-section"></div>
+    <p style="font-size:10px;color:var(--fg3);font-family:'DM Mono',monospace;margin-bottom:12px;letter-spacing:0.08em">SINCRONIZACIÓN AUTOMÁTICA (guardado para cuando conectemos el parser)</p>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Dígitos de cuenta (correo banco)</label>
+        <input class="form-input" type="text" id="cuenta-digits" placeholder="Ej: 1864">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Correo remitente del banco</label>
+        <input class="form-input" type="text" id="cuenta-email" placeholder="Ej: notificaciones@produbanco.com">
+      </div>
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="cuenta-active" style="width:auto" checked>
+      <label class="form-label" style="margin:0;cursor:pointer" for="cuenta-active">Cuenta activa</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-cuenta')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-cuenta" onclick="saveCuenta()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SOBRE -->
+<div class="modal-overlay" id="modal-sobre">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-sobre')">✕</button>
+    <p class="modal-title" id="modal-sobre-title">Nuevo Sobre</p>
+    <input type="hidden" id="sobre-edit-id">
+    <div class="form-row">
+      <label class="form-label">Nombre</label>
+      <input class="form-input" type="text" id="sobre-name" placeholder="Ej: Vacaciones diciembre...">
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Presupuesto ($)</label>
+        <input class="form-input" type="number" step="0.01" id="sobre-budgeted" placeholder="0.00">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Mes</label>
+        <input class="form-input" type="month" id="sobre-month">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Categoría (opcional)</label>
+      <select class="form-input" id="sobre-category"><option value="">Sin categoría</option></select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Notas</label>
+      <input class="form-input" type="text" id="sobre-notes" placeholder="Notas libres...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-sobre')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-sobre" onclick="saveSobre()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍA -->
+<div class="modal-overlay" id="modal-categoria">
+  <div class="modal" style="max-width:380px">
+    <button class="modal-close" onclick="closeModal('modal-categoria')">✕</button>
+    <p class="modal-title" id="modal-categoria-title">Nueva Categoría</p>
+    <input type="hidden" id="categoria-edit-id">
+    <div class="form-row">
+      <label class="form-label">Nombre</label>
+      <input class="form-input" type="text" id="categoria-name" placeholder="Ej: Mascota...">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Tipo</label>
+      <select class="form-input" id="categoria-type">
+        <option value="gasto">Gasto</option>
+        <option value="ingreso">Ingreso</option>
+      </select>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Ícono (emoji)</label>
+        <input class="form-input" type="text" id="categoria-icon" placeholder="🐶">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Color</label>
+        <input class="form-input" type="color" id="categoria-color" value="#A3B18A">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-categoria')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-categoria" onclick="saveCategoria()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="outer">
@@ -534,6 +675,41 @@ function calcDeferredInstallment(){
   prev.innerHTML=`Cuota: <strong>$${cuota.toFixed(2)}</strong> · Total con interés: <strong>$${totalConInteres.toFixed(2)}</strong> · ${n} meses`;
 }
 
+// ── DIFERIR TRANSACCIÓN DIRECTO (desde el modal de transacción) ─────────────
+function onTxnCreditChange(){
+  const isCC=document.getElementById('txn-credit').value==='true';
+  const row=document.getElementById('txn-diferir-row');
+  if(row) row.style.display=isCC?'block':'none';
+}
+async function diferirTxnActual(){
+  const amount=parseFloat(document.getElementById('txn-amount').value)||0;
+  const desc=document.getElementById('txn-desc').value||'Consumo tarjeta';
+  if(!amount){toast('Ingresa el monto primero','err');return;}
+  const cuotasStr=prompt('¿A cuántas cuotas quieres diferir "'+desc+'" ('+fmt(amount)+')?','3');
+  if(cuotasStr===null) return;
+  const cuotas=parseInt(cuotasStr);
+  if(!cuotas||cuotas<1){toast('Número de cuotas inválido','err');return;}
+  const cuotaMensual=Math.round((amount/cuotas)*100)/100;
+  const now=new Date();
+  const mes=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+  const body={
+    name:'Diferido: '+desc,amount:cuotaMensual,frequency:'mensual',category:'personal',
+    day_of_month:1,is_active:true,is_credit_card:true,is_deferred:true,
+    deferred_total_amount:amount,deferred_total_installments:cuotas,deferred_current_installment:1,
+    deferred_interest_rate:0,deferred_card:'black',deferred_start_month:mes
+  };
+  try{
+    const r=await fetch(`${SB}/rest/v1/fixed_expenses`,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify(body)});
+    if(!r.ok) throw new Error(await r.text());
+    const nw=await r.json();
+    const nid=Array.isArray(nw)?nw[0]?.id:nw?.id;
+    if(nid) await fetch(`${SB}/rest/v1/monthly_expense_status`,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify({expense_id:nid,month:mes,status:'pendiente'})});
+    toast('✓ Diferido a '+cuotas+' cuotas de '+fmt(cuotaMensual));
+    closeModal('modal-txn');
+    setTimeout(load,500);
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
 // ── BALANCE INLINE EDIT ─────────────────────────────────────────────────────
 function editBalance(accId,currentBal,colorClass,elId){
   const el=document.getElementById(elId);
@@ -620,10 +796,10 @@ function onTxnTypeChange(){
 async function loadSelects(){
   if(!_cats.length) _cats=await q('categories?select=id,name&order=name');
   if(!_accs.length) _accs=await q('accounts?select=id,name,bank&order=bank');
-  ['txn-category','txn-account','txn-to-account'].forEach(id=>{
+  ['txn-category','txn-account','txn-to-account','sobre-category'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel) return;
-    if(id==='txn-category'&&sel.options.length<=1) _cats.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+    if((id==='txn-category'||id==='sobre-category')&&sel.options.length<=1) _cats.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
     if((id==='txn-account'||id==='txn-to-account')&&sel.options.length<=1) _accs.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.bank+' · '+a.name;sel.appendChild(o);});
   });
 }
@@ -639,6 +815,7 @@ function openAddTxn(){
   document.getElementById('txn-category').value='';
   document.getElementById('txn-account').value='';
   const tdr=document.getElementById('transfer-dest-row');if(tdr)tdr.className='form-row transfer-field';
+  onTxnCreditChange();
   openModal('modal-txn');
 }
 function openEditTxn(t){
@@ -651,6 +828,7 @@ function openEditTxn(t){
   document.getElementById('txn-date').value=t.transaction_date||new Date().toISOString().split('T')[0];
   document.getElementById('txn-credit').value=t.is_credit_card?'true':'false';
   onTxnTypeChange();
+  onTxnCreditChange();
   setTimeout(()=>{
     document.getElementById('txn-category').value=t.category_id||'';
     document.getElementById('txn-account').value=t.account_id||'';
@@ -846,6 +1024,233 @@ async function deleteGF(id){
   closeModal('modal-confirm');toast('✓ Eliminado');setTimeout(load,400);
 }
 
+// ── CUENTAS CRUD (Administrar) ───────────────────────────────────────────────
+function openAddCuenta(){
+  document.getElementById('modal-cuenta-title').textContent='Nueva Cuenta';
+  ['cuenta-edit-id','cuenta-name','cuenta-bank','cuenta-role','cuenta-balance','cuenta-notes','cuenta-digits','cuenta-email'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cuenta-type').value='ahorro';
+  document.getElementById('cuenta-currency').value='USD';
+  document.getElementById('cuenta-active').checked=true;
+  openModal('modal-cuenta');
+}
+function openEditCuenta(a){
+  document.getElementById('modal-cuenta-title').textContent='Editar Cuenta';
+  document.getElementById('cuenta-edit-id').value=a.id;
+  document.getElementById('cuenta-name').value=a.name||'';
+  document.getElementById('cuenta-bank').value=a.bank||'';
+  document.getElementById('cuenta-type').value=a.type||'ahorro';
+  document.getElementById('cuenta-role').value=a.role||'';
+  document.getElementById('cuenta-balance').value=a.balance||0;
+  document.getElementById('cuenta-currency').value=a.currency||'USD';
+  document.getElementById('cuenta-notes').value=a.notes||'';
+  document.getElementById('cuenta-digits').value=a.email_digits_hint||'';
+  document.getElementById('cuenta-email').value=a.email_sender_hint||'';
+  document.getElementById('cuenta-active').checked=a.is_active!==false;
+  openModal('modal-cuenta');
+}
+async function saveCuenta(){
+  const id=document.getElementById('cuenta-edit-id').value;
+  const name=document.getElementById('cuenta-name').value.trim();
+  const bank=document.getElementById('cuenta-bank').value.trim();
+  const role=document.getElementById('cuenta-role').value.trim();
+  if(!name||!bank||!role){toast('Nombre, banco y rol son obligatorios','err');return;}
+  const btn=document.getElementById('btn-save-cuenta');
+  btn.disabled=true;btn.textContent='Guardando...';
+  const body={
+    name,bank,role,type:document.getElementById('cuenta-type').value,
+    currency:document.getElementById('cuenta-currency').value||'USD',
+    notes:document.getElementById('cuenta-notes').value||null,
+    email_digits_hint:document.getElementById('cuenta-digits').value||null,
+    email_sender_hint:document.getElementById('cuenta-email').value||null,
+    is_active:document.getElementById('cuenta-active').checked
+  };
+  if(!id) body.balance=$f(document.getElementById('cuenta-balance').value);
+  try{
+    if(id){
+      const r=await fetch(`${SB}/rest/v1/accounts?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    } else {
+      const r=await fetch(`${SB}/rest/v1/accounts`,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    }
+    closeModal('modal-cuenta');
+    toast(id?'✓ Cuenta actualizada':'✓ Cuenta creada');
+    setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Guardar';}
+}
+function confirmDeleteCuenta(id,name){
+  document.getElementById('confirm-msg').textContent='¿Eliminar la cuenta "'+name+'"? Solo hazlo si no tiene transacciones asociadas.';
+  document.getElementById('confirm-btn').onclick=()=>deleteCuenta(id);
+  openModal('modal-confirm');
+}
+async function deleteCuenta(id){
+  try{
+    const r=await fetch(`${SB}/rest/v1/accounts?id=eq.${id}`,{method:'DELETE',headers:{...H,Prefer:'return=minimal'}});
+    if(!r.ok) throw new Error('No se pudo eliminar (probablemente tiene transacciones asociadas)');
+    closeModal('modal-confirm');toast('✓ Cuenta eliminada');setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');closeModal('modal-confirm');}
+}
+
+// ── SOBRES CRUD (Administrar) ────────────────────────────────────────────────
+function openAddSobre(){
+  loadSelects();
+  document.getElementById('modal-sobre-title').textContent='Nuevo Sobre';
+  ['sobre-edit-id','sobre-name','sobre-budgeted','sobre-notes'].forEach(id=>document.getElementById(id).value='');
+  const now=new Date();
+  document.getElementById('sobre-month').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('sobre-category').value='';
+  openModal('modal-sobre');
+}
+function openEditSobre(e){
+  loadSelects();
+  document.getElementById('modal-sobre-title').textContent='Editar Sobre';
+  document.getElementById('sobre-edit-id').value=e.id;
+  document.getElementById('sobre-name').value=e.name||'';
+  document.getElementById('sobre-budgeted').value=e.budgeted||0;
+  document.getElementById('sobre-notes').value=e.notes||'';
+  if(e.month) document.getElementById('sobre-month').value=e.month.substring(0,7);
+  setTimeout(()=>{document.getElementById('sobre-category').value=e.category_id||'';},100);
+  openModal('modal-sobre');
+}
+async function saveSobre(){
+  const id=document.getElementById('sobre-edit-id').value;
+  const name=document.getElementById('sobre-name').value.trim();
+  const monthVal=document.getElementById('sobre-month').value;
+  if(!name||!monthVal){toast('Nombre y mes son obligatorios','err');return;}
+  const btn=document.getElementById('btn-save-sobre');
+  btn.disabled=true;btn.textContent='Guardando...';
+  const body={
+    name,budgeted:$f(document.getElementById('sobre-budgeted').value),
+    month:monthVal+'-01',category_id:document.getElementById('sobre-category').value||null,
+    notes:document.getElementById('sobre-notes').value||null,status:'active'
+  };
+  try{
+    if(id){
+      const r=await fetch(`${SB}/rest/v1/envelopes?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    } else {
+      body.spent=0;
+      const r=await fetch(`${SB}/rest/v1/envelopes`,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    }
+    closeModal('modal-sobre');
+    toast(id?'✓ Sobre actualizado':'✓ Sobre creado');
+    setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Guardar';}
+}
+function confirmDeleteSobre(id,name){
+  document.getElementById('confirm-msg').textContent='¿Eliminar el sobre "'+name+'"?';
+  document.getElementById('confirm-btn').onclick=()=>deleteSobre(id);
+  openModal('modal-confirm');
+}
+async function deleteSobre(id){
+  await fetch(`${SB}/rest/v1/envelopes?id=eq.${id}`,{method:'DELETE',headers:H});
+  closeModal('modal-confirm');toast('✓ Sobre eliminado');setTimeout(load,400);
+}
+async function cerrarSobre(id){
+  await fetch(`${SB}/rest/v1/envelopes?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify({status:'closed',closed_at:new Date().toISOString()})});
+  toast('✓ Sobre cerrado');setTimeout(load,400);
+}
+
+// ── CATEGORÍAS CRUD (Administrar) ────────────────────────────────────────────
+function openAddCategoria(){
+  document.getElementById('modal-categoria-title').textContent='Nueva Categoría';
+  ['categoria-edit-id','categoria-name','categoria-icon'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('categoria-type').value='gasto';
+  document.getElementById('categoria-color').value='#A3B18A';
+  openModal('modal-categoria');
+}
+function openEditCategoria(c){
+  document.getElementById('modal-categoria-title').textContent='Editar Categoría';
+  document.getElementById('categoria-edit-id').value=c.id;
+  document.getElementById('categoria-name').value=c.name||'';
+  document.getElementById('categoria-type').value=c.type||'gasto';
+  document.getElementById('categoria-icon').value=c.icon||'';
+  document.getElementById('categoria-color').value=c.color||'#A3B18A';
+  openModal('modal-categoria');
+}
+async function saveCategoria(){
+  const id=document.getElementById('categoria-edit-id').value;
+  const name=document.getElementById('categoria-name').value.trim();
+  if(!name){toast('El nombre es obligatorio','err');return;}
+  const btn=document.getElementById('btn-save-categoria');
+  btn.disabled=true;btn.textContent='Guardando...';
+  const body={name,type:document.getElementById('categoria-type').value,icon:document.getElementById('categoria-icon').value||null,color:document.getElementById('categoria-color').value||null};
+  try{
+    if(id){
+      const r=await fetch(`${SB}/rest/v1/categories?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    } else {
+      const r=await fetch(`${SB}/rest/v1/categories`,{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    }
+    closeModal('modal-categoria');
+    _cats=[];
+    toast(id?'✓ Categoría actualizada':'✓ Categoría creada');
+    setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Guardar';}
+}
+function confirmDeleteCategoria(id,name){
+  document.getElementById('confirm-msg').textContent='¿Eliminar la categoría "'+name+'"? Las transacciones que la usan quedarán sin categoría.';
+  document.getElementById('confirm-btn').onclick=()=>deleteCategoria(id);
+  openModal('modal-confirm');
+}
+async function deleteCategoria(id){
+  try{
+    const r=await fetch(`${SB}/rest/v1/categories?id=eq.${id}`,{method:'DELETE',headers:{...H,Prefer:'return=minimal'}});
+    if(!r.ok) throw new Error(await r.text());
+    closeModal('modal-confirm');_cats=[];toast('✓ Categoría eliminada');setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');closeModal('modal-confirm');}
+}
+
+// ── RENDER ADMINISTRAR ───────────────────────────────────────────────────────
+function renderCuentasAdmin(accounts){
+  if(!accounts.length) return '<p style="text-align:center;color:var(--fg4);font-size:10px;padding:16px;font-family:\'DM Mono\',monospace">Sin cuentas</p>';
+  return `<div class="gf-items">`+accounts.map(a=>{
+    const nm=(a.name||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return `<div class="gf-item ${a.is_active===false?'inactive':''}">
+      <span class="gf-iname">${a.bank} · ${a.name} <span style="color:var(--fg4);font-family:'DM Mono',monospace;font-size:9px">${a.role}</span></span>
+      <span class="gf-iamt">${fmt(a.balance)}</span>
+      <div class="gf-acts">
+        <button class="txn-btn edit" onclick='openEditCuenta(${JSON.stringify(a)})'>✏️</button>
+        <button class="txn-btn del" onclick="confirmDeleteCuenta('${a.id}','${nm}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
+}
+function renderSobresAdmin(envelopes){
+  if(!envelopes.length) return '<p style="text-align:center;color:var(--fg4);font-size:10px;padding:16px;font-family:\'DM Mono\',monospace">Sin sobres</p>';
+  return `<div class="gf-items">`+envelopes.map(e=>{
+    const nm=(e.name||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const closed=e.status==='closed';
+    return `<div class="gf-item ${closed?'inactive':''}">
+      <span class="gf-iname">${e.name} <span style="color:var(--fg4);font-family:'DM Mono',monospace;font-size:9px">${(e.month||'').substring(0,7)} · ${e.status}</span></span>
+      <span class="gf-iamt">${fmt(e.spent)} / ${fmt(e.budgeted)}</span>
+      <div class="gf-acts">
+        ${!closed?`<button class="txn-btn" onclick="cerrarSobre('${e.id}')">📦</button>`:''}
+        <button class="txn-btn edit" onclick='openEditSobre(${JSON.stringify(e)})'>✏️</button>
+        <button class="txn-btn del" onclick="confirmDeleteSobre('${e.id}','${nm}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
+}
+function renderCategoriasAdmin(categories){
+  if(!categories.length) return '<p style="text-align:center;color:var(--fg4);font-size:10px;padding:16px;font-family:\'DM Mono\',monospace">Sin categorías</p>';
+  return `<div class="gf-items">`+categories.map(c=>{
+    const nm=(c.name||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return `<div class="gf-item">
+      <span class="gf-iname">${c.icon||'•'} ${c.name} <span style="color:var(--fg4);font-family:'DM Mono',monospace;font-size:9px">${c.type}</span></span>
+      <div class="gf-acts">
+        <button class="txn-btn edit" onclick='openEditCategoria(${JSON.stringify(c)})'>✏️</button>
+        <button class="txn-btn del" onclick="confirmDeleteCategoria('${c.id}','${nm}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
+}
+
 // ── PIE ──────────────────────────────────────────────────────────────────────
 function buildPie(cats,total,size=160){
   if(!cats.length) return `<svg width="${size}" height="${size}"></svg>`;
@@ -940,7 +1345,7 @@ async function load(){
     const cycle=getCycleRange();
     const mesAnteriorInicio=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
 
-    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
@@ -951,7 +1356,9 @@ async function load(){
       q('transactions?is_credit_card=eq.true&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('transactions?account_id=eq.9b3b1c66-4661-4a0c-bc9c-994995aba043&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('v_deferred_expenses?select=*'),
-      q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)')
+      q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
+      q('envelopes?select=*&order=month.desc,name'),
+      q('categories?select=*&order=name')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -968,6 +1375,8 @@ async function load(){
     const dId=DINERS?.id||'9b3b1c66-4661-4a0c-bc9c-994995aba043';
 
     _allTxns=T;_accs=A;_histTxns=Array.isArray(histTxns)?histTxns:[];
+    const ALLENVS=Array.isArray(allEnvs)?allEnvs:[];
+    _cats=Array.isArray(allCats)?allCats:[];
 
     const gastosDirect=T.filter(t=>t.type==='gasto'||(t.type==='transferencia'&&!t.transfer_to_account_id));
     const pagosTarjeta=T.filter(t=>t.type==='pago_tarjeta');
@@ -988,6 +1397,7 @@ async function load(){
     const ahorPich=byRole('ahorro_proposito')[0]||{id:null,balance:0};
     const inv=byRole('inversion')[0]||{id:null,balance:0};
     const metas=byRole('metas')[0]||{id:null,balance:0};
+    const metasNana=byRole('metas_terceros')[0]||{id:null,balance:0,name:'Guayaquil Ahorro - Meta Ñaña'};
     const efectivoAcc=byRole('efectivo')[0]||{id:'66025932-220b-4f76-a0b5-e5abfd85b04b',balance:0,name:'Efectivo',bank:'Efectivo'};
 
     const black=CC[0]||{};
@@ -1004,7 +1414,8 @@ async function load(){
     const saldoPich=$f(opPich.balance);
     const saldoProd=$f(recep.balance);
     const disponible=saldoPich+saldoProd;
-    const patrimonio=A.reduce((s,a)=>s+$f(a.balance),0);
+    // Excluimos cuentas de terceros (ej. meta de la hermana de Carlos) del patrimonio neto
+    const patrimonio=A.filter(a=>a.role!=='metas_terceros').reduce((s,a)=>s+$f(a.balance),0);
     const efectivoBalance=$f(efectivoAcc.balance);
 
     // Efectivo: entradas y salidas del mes
@@ -1192,7 +1603,7 @@ async function load(){
     html+=`<div class="g kpi"><p class="kpi-label">Fondo emergencia</p><p class="kpi-val ${fePct>=50?'c-pos':fePct>=25?'c-warn':'c-neg'}">${fePct.toFixed(1)}%</p><p class="kpi-sub">${fmtFull(feSaldo)} de ${fmtFull(feMeta)}</p><div class="pb"><div class="pb-fill" style="width:${fePct}%;background:${fePct>=50?'var(--pos)':fePct>=25?'var(--warn)':'var(--neg)'}"></div></div></div>`;
     html+=`<div class="g kpi"><p class="kpi-label">Gastos fijos</p><p class="kpi-val ${chkPct>=80?'c-pos':chkPct>=50?'c-warn':'c-neg'}">${pagados.length}<span style="font-size:18px;font-weight:400;color:var(--fg3)"> / ${CHK.length}</span></p><p class="kpi-sub">${fmtFull(tPagado)} de ${fmtFull(tFijos)}</p><div class="pb"><div class="pb-fill" style="width:${chkPct}%;background:${chkPct>=80?'var(--pos)':chkPct>=50?'var(--warn)':'var(--neg)'}"></div></div></div>`;
     html+=`<div class="g kpi"><p class="kpi-label">Transacciones</p><p class="kpi-val c-info">${T.length}</p><p class="kpi-sub">Auto: ${T.filter(t=>t.source==='gmail').length} · Manual: ${T.filter(t=>t.source!=='gmail').length}</p></div>`;
-    html+=`<div class="g kpi"><div class="at at-info"></div><p class="kpi-label">Patrimonio total</p><p class="kpi-val c-info">${fmtFull(patrimonio)}</p><p class="kpi-sub">todas las cuentas</p></div>`;
+    html+=`<div class="g kpi"><div class="at at-info"></div><p class="kpi-label">Patrimonio total</p><p class="kpi-val c-info">${fmtFull(patrimonio)}</p><p class="kpi-sub">todas las cuentas (excluye meta ñaña)</p></div>`;
     html+=`</div>`;
 
     // Cuentas Produbanco
@@ -1211,9 +1622,9 @@ async function load(){
     html+=`</div>`;
 
     html+=`<p class="sl">cuentas · Guayaquil</p>`;
-    html+=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px">`;
-    [{a:inv,label:'Inversión mensual'},{a:metas,label:'Metas'}].forEach(({a,label})=>{
-      html+=`<div class="g acc acc-guay"><div class="at at-guay"></div><p class="acc-bank c-guay">Guayaquil</p><p class="acc-name">${a.name||'-'}</p>${editableAccBal(a,'c-guay')}<p class="acc-role">${label}</p></div>`;
+    html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">`;
+    [{a:inv,label:'Inversión mensual'},{a:metas,label:'Metas · Carlos'},{a:metasNana,label:'Metas · Ñaña (no cuenta patrimonio)'}].forEach(({a,label})=>{
+      html+=`<div class="g acc acc-guay"><div class="at at-guay"></div><p class="acc-bank c-guay">Guayaquil</p><p class="acc-name">${a.name||'-'}</p>${a.id?editableAccBal(a,'c-guay'):`<p class="acc-bal c-guay">${fmtFull(a.balance)}</p>`}<p class="acc-role">${label}</p></div>`;
     });
     html+=`</div>`;
 
@@ -1262,6 +1673,18 @@ async function load(){
     html+=`<div class="g" style="padding:4px 0" id="txn-list"></div>`;
     html+=`<div class="show-more" id="txn-showmore"></div>`;
     html+=`</div></div>`;
+
+    // ── ADMINISTRAR ──────────────────────────────────────────────────────────
+    html+=`<p class="sl" style="margin-top:40px">administrar</p>`;
+
+    html+=`<div class="sl-row"><span class="sl-label">cuentas</span><button class="add-btn" onclick="openAddCuenta()">+ Agregar cuenta</button></div>`;
+    html+=`<div class="g" style="margin-bottom:6px;overflow:hidden">${renderCuentasAdmin(A)}</div>`;
+
+    html+=`<div class="sl-row"><span class="sl-label">sobres</span><button class="add-btn" onclick="openAddSobre()">+ Agregar sobre</button></div>`;
+    html+=`<div class="g" style="margin-bottom:6px;overflow:hidden">${renderSobresAdmin(ALLENVS)}</div>`;
+
+    html+=`<div class="sl-row"><span class="sl-label">categorías</span><button class="add-btn" onclick="openAddCategoria()">+ Agregar categoría</button></div>`;
+    html+=`<div class="g" style="margin-bottom:6px;overflow:hidden">${renderCategoriasAdmin(_cats)}</div>`;
 
     // GF
     html+=`<div class="sl-row" style="margin-top:28px"><span class="sl-label">gestión gastos fijos</span><button class="add-btn" onclick="openAddGF()">+ Agregar</button></div>`;
