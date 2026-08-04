@@ -819,6 +819,10 @@ async function confirmPayCard(){
   const btn=document.getElementById('btn-save-pay-card');
   btn.disabled=true;btn.textContent='⟳ Procesando...';
   try{
+    const hoy=new Date().toISOString().split('T')[0];
+    const mes=hoy.substring(0,7)+'-01';
+    const rt=await fetch(`${SB}/rest/v1/transactions`,{method:'POST',headers:H,body:JSON.stringify({type:'pago_tarjeta',amount,description:'Pago tarjeta de crédito',transaction_date:hoy,month:mes,account_id:originId,card_id:creditCardId,source:'dashboard',is_verified:true,is_credit_card:false})});
+    if(!rt.ok) throw new Error(await rt.text());
     const r=await fetch(`${SB}/rest/v1/rpc/pay_credit_card`,{method:'POST',headers:H,body:JSON.stringify({p_origin_account_id:originId,p_amount:amount,p_card_account_id:cardAccountId,p_credit_card_id:creditCardId})});
     if(!r.ok) throw new Error(await r.text());
     toast('✓ Pago de '+fmt(amount)+' registrado');
