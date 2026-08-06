@@ -387,6 +387,20 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
   </div>
 </div>
 
+<!-- MODAL DIFERIDOS: AVANZAR CUOTA POST-PAGO -->
+<div class="modal-overlay" id="modal-deferred-rollover">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-deferred-rollover')">✕</button>
+    <p class="modal-title">🎉 ¡Pagaste todo el consumo de este mes!</p>
+    <p style="font-size:11px;color:var(--fg3);margin-bottom:14px">¿Agrego la cuota del siguiente mes de estos diferidos?</p>
+    <div id="deferred-rollover-list"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-deferred-rollover');setTimeout(load,300)">Omitir todo</button>
+      <button class="btn btn-primary" id="btn-save-rollover" onclick="confirmDeferredRollover()">Confirmar seleccionados</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CONFIRMAR -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal" style="max-width:360px">
@@ -445,6 +459,10 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
           <option value="transporte">Transporte</option>
         </select>
       </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Grupo (opcional — para sumar junto a otros)</label>
+      <select class="form-input" id="gf-group"><option value="">Sin grupo</option></select>
     </div>
     <div class="form-row" style="display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="gf-is-cc" style="width:auto">
@@ -720,7 +738,8 @@ const fmtFull=n=>'$'+$f(n).toLocaleString('es-EC',{minimumFractionDigits:2,maxim
 const pct=(a,b)=>b>0?Math.min(100,a/b*100):0;
 const q=p=>fetch(SB+'/rest/v1/'+p,{headers:H}).then(r=>r.json());
 
-let _cats=[], _accs=[], _allTxns=[], _histTxns=[], _showAll=false, _filterAcc='', _balOrig={};
+let _cats=[], _accs=[], _grps=[], _defs=[], _allTxns=[], _histTxns=[], _showAll=false, _filterAcc='', _balOrig={};
+const CARD_TAG_BY_ID={'5adc1f9a-e626-43de-bac5-e382a1ef63c3':'black','14781c0b-cf60-48ab-8fc6-33daa752bff2':'diners'};
 
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
@@ -867,9 +886,45 @@ async function confirmPayCard(){
     if(!r.ok) throw new Error(await r.text());
     toast('✓ Pago de '+fmt(amount)+' registrado');
     closeModal('modal-pay-card');
-    setTimeout(load,500);
+    const cardTag=CARD_TAG_BY_ID[creditCardId];
+    const pendientes=_defs.filter(d=>d.deferred_card===cardTag&&d.deferred_current_installment<=d.deferred_total_installments);
+    if(cardTag&&pendientes.length>0){ openDeferredRollover(cardTag,pendientes); }
+    else{ setTimeout(load,500); }
   }catch(e){toast('Error: '+e.message,'err');}
   finally{btn.disabled=false;btn.textContent='Confirmar pago';}
+}
+
+function openDeferredRollover(cardTag,pendientes){
+  const list=document.getElementById('deferred-rollover-list');
+  list.innerHTML=pendientes.map(d=>`
+    <div class="form-row" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)">
+      <input type="checkbox" class="rollover-check" data-id="${d.id}" data-total="${d.deferred_total_installments}" data-current="${d.deferred_current_installment}" checked style="width:auto">
+      <div style="flex:1">
+        <p style="font-size:12px;color:var(--fg)">${d.name}</p>
+        <p style="font-size:9px;color:var(--fg4);font-family:'DM Mono',monospace">Cuota ${d.deferred_current_installment}/${d.deferred_total_installments}</p>
+      </div>
+      <span style="font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--warn)">$${$f(d.cuota_mensual).toFixed(2)}</span>
+    </div>`).join('');
+  openModal('modal-deferred-rollover');
+}
+async function confirmDeferredRollover(){
+  const btn=document.getElementById('btn-save-rollover');
+  btn.disabled=true;btn.textContent='Guardando...';
+  const checks=[...document.querySelectorAll('.rollover-check')].filter(c=>c.checked);
+  try{
+    for(const c of checks){
+      const id=c.dataset.id;
+      const newInstallment=parseInt(c.dataset.current)+1;
+      const total=parseInt(c.dataset.total);
+      const body=newInstallment>total?{deferred_current_installment:newInstallment,is_active:false}:{deferred_current_installment:newInstallment};
+      const r=await fetch(`${SB}/rest/v1/fixed_expenses?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(await r.text());
+    }
+    toast('✓ Cuotas actualizadas');
+    closeModal('modal-deferred-rollover');
+    setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Confirmar seleccionados';}
 }
 
 // ── CARD TOGGLE ─────────────────────────────────────────────────────────────
@@ -1051,12 +1106,18 @@ function renderGFSection(gfs){
   return h;
 }
 
+function populateGroupSelect(selectedId){
+  const sel=document.getElementById('gf-group');
+  sel.innerHTML='<option value="">Sin grupo</option>'+_grps.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  sel.value=selectedId||'';
+}
 function openAddGF(){
   document.getElementById('modal-gf-title').textContent='Nuevo Gasto Fijo';
   ['gf-edit-id','gf-name','gf-amount','gf-deferred-total','gf-deferred-installments','gf-deferred-interest'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('gf-day').value='1';
   document.getElementById('gf-frequency').value='mensual';
   document.getElementById('gf-category').value='hogar';
+  populateGroupSelect('');
   document.getElementById('gf-is-cc').checked=false;
   document.getElementById('gf-is-deferred').checked=false;
   document.getElementById('gf-deferred-current').value='1';
@@ -1084,6 +1145,7 @@ function openEditGF(g){
   document.getElementById('gf-deferred-card').value=g.deferred_card||'black';
   if(g.deferred_start_month) document.getElementById('gf-deferred-start').value=g.deferred_start_month.substring(0,7);
   document.getElementById('deferred-fields').className='deferred-fields'+(g.is_deferred?' visible':'');
+  populateGroupSelect(g.group_id||'');
   openModal('modal-gf');
 }
 async function saveGF(){
@@ -1100,6 +1162,7 @@ async function saveGF(){
     category:document.getElementById('gf-category').value,
     day_of_month:parseInt(document.getElementById('gf-day').value)||1,
     is_credit_card:document.getElementById('gf-is-cc').checked,
+    group_id:document.getElementById('gf-group').value||null,
     is_active:true,
     is_deferred:isDeferred,
     deferred_total_amount:isDeferred?($f(document.getElementById('gf-deferred-total').value)||null):null,
@@ -1465,20 +1528,21 @@ async function load(){
     const cycle=getCycleRange();
     const mesAnteriorInicio=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
 
-    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
       q('envelopes?month=eq.'+mes+'&status=eq.active&select=*'),
       q('monthly_expense_status?month=eq.'+mes+'&select=*,fixed_expenses!expense_id(name,amount,category)&order=status.asc'),
-      q('fixed_expenses?select=id,name,amount,frequency,day_of_month,is_active,is_credit_card,category,is_deferred,deferred_total_amount,deferred_total_installments,deferred_current_installment,deferred_interest_rate,deferred_card,deferred_start_month&order=category,amount.desc'),
+      q('fixed_expenses?select=id,name,amount,frequency,day_of_month,is_active,is_credit_card,category,is_deferred,deferred_total_amount,deferred_total_installments,deferred_current_installment,deferred_interest_rate,deferred_card,deferred_start_month,group_id&order=category,amount.desc'),
       q('accounts?role=eq.tarjeta_diners&select=id,name,balance,credit_card_balance'),
       q('transactions?is_credit_card=eq.true&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('transactions?account_id=eq.9b3b1c66-4661-4a0c-bc9c-994995aba043&transaction_date=gte.'+cycle.start+'&transaction_date=lte.'+cycle.end+'&order=transaction_date.desc&select=id,amount,description,transaction_date'),
       q('v_deferred_expenses?select=*'),
       q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('envelopes?select=*&order=month.desc,name'),
-      q('categories?select=*&order=name')
+      q('categories?select=*&order=name'),
+      q('expense_groups?select=*&order=name')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -1491,10 +1555,16 @@ async function load(){
     const BCYC=Array.isArray(blackCycleTxns)?blackCycleTxns:[];
     const DCYC=Array.isArray(dinersCycleTxns)?dinersCycleTxns:[];
     const DEFS=Array.isArray(deferredGFs)?deferredGFs:[];
-    const dBalance=$f(DINERS?.credit_card_balance??DINERS?.balance??0);
+    const GRPS=Array.isArray(expGroups)?expGroups:[];
+    const GRPS_SUMMARY=GRPS.map(g=>{
+      const items=GFS.filter(f=>f.group_id===g.id&&f.is_active);
+      return {...g,items,total:items.reduce((s,f)=>s+$f(f.amount),0)};
+    }).filter(g=>g.items.length>0);
+    const dDeferidoSum=DEFS.filter(d=>d.deferred_card==='diners').reduce((s,d)=>s+$f(d.cuota_mensual),0);
+    const dBalance=$f(DINERS?.credit_card_balance??DINERS?.balance??0)+dDeferidoSum;
     const dId=DINERS?.id||'9b3b1c66-4661-4a0c-bc9c-994995aba043';
 
-    _allTxns=T;_accs=A;_histTxns=Array.isArray(histTxns)?histTxns:[];
+    _allTxns=T;_accs=A;_grps=GRPS;_defs=DEFS;_histTxns=Array.isArray(histTxns)?histTxns:[];
     const ALLENVS=Array.isArray(allEnvs)?allEnvs:[];
     _cats=Array.isArray(allCats)?allCats:[];
 
@@ -1523,7 +1593,8 @@ async function load(){
     const black=CC[0]||{};
     const bDeuda=$f(black.previous_cycle_debt);
     const bCiclo=$f(black.current_cycle_spent);
-    const bTotalCalc=$f(black.total_to_provision);
+    const bDeferidoSum=DEFS.filter(d=>d.deferred_card==='black').reduce((s,d)=>s+$f(d.cuota_mensual),0);
+    const bTotalCalc=$f(black.total_to_provision)+bDeferidoSum;
     const bManual=$f(recep.credit_card_balance);
     const bTotal=bManual>0?bManual:bTotalCalc;
     const bIsManual=bManual>0;
@@ -1617,6 +1688,21 @@ async function load(){
     html+=`<div class="gb-item"><p class="gb-label">Gastos directos</p><p class="gb-val c-neg">${fmtFull(tGDirect)}</p><p class="gb-sub">compras, servicios, comida</p></div>`;
     html+=`<div class="gb-item"><p class="gb-label">Pago tarjeta Black</p><p class="gb-val c-warn">${fmtFull(tGTarjeta)}</p><p class="gb-sub">liquidación ciclo anterior</p></div>`;
     html+=`</div></div>`;
+
+    // Grupos de ahorro / transferencia (etiquetas libres sobre gastos fijos)
+    if(GRPS_SUMMARY.length>0){
+      html+=`<p class="sl">separar este mes</p>`;
+      html+=`<div class="g4" style="margin-bottom:10px">`;
+      GRPS_SUMMARY.forEach(g=>{
+        html+=`<div class="g kpi" style="border-color:${g.color}33">
+          <div class="at" style="background:${g.color}"></div>
+          <p class="kpi-label" style="color:${g.color}">${g.name}</p>
+          <p class="kpi-val">${fmtFull(g.total)}</p>
+          <p class="kpi-sub">${g.items.map(i=>i.name).join(' + ')}</p>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
 
     // Cuentas operativas
     html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">`;
