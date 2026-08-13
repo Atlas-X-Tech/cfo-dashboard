@@ -515,6 +515,67 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
   </div>
 </div>
 
+<!-- MODAL PRESTAMO -->
+<div class="modal-overlay" id="modal-prestamo">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-prestamo')">✕</button>
+    <p class="modal-title" id="modal-prestamo-title">Editar Préstamo</p>
+    <input type="hidden" id="pr-edit-id">
+    <div class="form-row">
+      <label class="form-label">Nombre</label>
+      <input class="form-input" type="text" id="pr-name" placeholder="Deuda Mami">
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label class="form-label">Cuota mensual ($)</label>
+        <input class="form-input" type="number" step="0.01" id="pr-monthly">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Saldo pendiente capital ($)</label>
+        <input class="form-input" type="number" step="0.01" id="pr-outstanding">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Tipo de interés</label>
+      <select class="form-input" id="pr-type" onchange="togglePrestamoFields()">
+        <option value="fixed_total_installments">Sin interés — nº de cuotas fijo</option>
+        <option value="fixed_interest_declining_capital">Interés fijo cada mes (no baja con el saldo)</option>
+        <option value="declining_balance_interest">Interés % sobre saldo (baja cada mes)</option>
+      </select>
+    </div>
+    <div class="form-grid2" id="pr-fields-fixed-installments" style="display:none">
+      <div class="form-row">
+        <label class="form-label">Nº total de cuotas</label>
+        <input class="form-input" type="number" id="pr-total-installments">
+      </div>
+    </div>
+    <div class="form-grid2" id="pr-fields-fixed-interest" style="display:none">
+      <div class="form-row">
+        <label class="form-label">Interés fijo mensual ($)</label>
+        <input class="form-input" type="number" step="0.01" id="pr-fixed-interest">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Capital por cuota ($)</label>
+        <input class="form-input" type="number" step="0.01" id="pr-capital-per-payment">
+      </div>
+    </div>
+    <div class="form-grid2" id="pr-fields-declining" style="display:none">
+      <div class="form-row">
+        <label class="form-label">Interés mensual (%)</label>
+        <input class="form-input" type="number" step="0.01" id="pr-interest-rate">
+      </div>
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="pr-active" style="width:auto">
+      <label class="form-label" style="margin:0;cursor:pointer" for="pr-active">Activo</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-prestamo')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-prestamo" onclick="savePrestamo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CUENTA -->
 <div class="modal-overlay" id="modal-cuenta">
   <div class="modal">
@@ -1196,6 +1257,62 @@ async function toggleGFActive(id,cur){
   await fetch(`${SB}/rest/v1/fixed_expenses?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify({is_active:!cur})});
   toast(cur?'Desactivado':'Activado');setTimeout(load,300);
 }
+// ── PRESTAMOS PERSONALES (efectivo) ─────────────────────────────────────────
+function togglePrestamoFields(){
+  const t=document.getElementById('pr-type').value;
+  document.getElementById('pr-fields-fixed-installments').style.display=t==='fixed_total_installments'?'grid':'none';
+  document.getElementById('pr-fields-fixed-interest').style.display=t==='fixed_interest_declining_capital'?'grid':'none';
+  document.getElementById('pr-fields-declining').style.display=t==='declining_balance_interest'?'grid':'none';
+}
+function openEditPrestamo(p){
+  document.getElementById('pr-edit-id').value=p.id;
+  document.getElementById('pr-name').value=p.name||'';
+  document.getElementById('pr-monthly').value=p.monthly_amount||'';
+  document.getElementById('pr-outstanding').value=p.outstanding_principal!=null?p.outstanding_principal:'';
+  document.getElementById('pr-type').value=p.repayment_type||'fixed_total_installments';
+  document.getElementById('pr-total-installments').value=p.total_installments||((p.paid_installments||0)+(p.cuotas_restantes||0))||'';
+  document.getElementById('pr-fixed-interest').value=p.fixed_interest_amount||'';
+  document.getElementById('pr-capital-per-payment').value=p.capital_per_payment||'';
+  document.getElementById('pr-interest-rate').value=p.monthly_interest_rate||'';
+  document.getElementById('pr-active').checked=p.is_active!==false;
+  togglePrestamoFields();
+  document.getElementById('modal-prestamo-title').textContent='Editar Préstamo';
+  openModal('modal-prestamo');
+}
+async function savePrestamo(){
+  const id=document.getElementById('pr-edit-id').value;
+  if(!id) return;
+  const btn=document.getElementById('btn-save-prestamo');
+  btn.disabled=true;btn.textContent='Guardando...';
+  const body={
+    name:document.getElementById('pr-name').value.trim(),
+    monthly_amount:parseFloat(document.getElementById('pr-monthly').value)||0,
+    outstanding_principal:parseFloat(document.getElementById('pr-outstanding').value)||0,
+    repayment_type:document.getElementById('pr-type').value,
+    total_installments:parseInt(document.getElementById('pr-total-installments').value)||null,
+    fixed_interest_amount:parseFloat(document.getElementById('pr-fixed-interest').value)||null,
+    capital_per_payment:parseFloat(document.getElementById('pr-capital-per-payment').value)||null,
+    monthly_interest_rate:parseFloat(document.getElementById('pr-interest-rate').value)||null,
+    is_active:document.getElementById('pr-active').checked
+  };
+  try{
+    const r=await fetch(`${SB}/rest/v1/installment_plans?id=eq.${id}`,{method:'PATCH',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+    if(!r.ok) throw new Error(await r.text());
+    closeModal('modal-prestamo');
+    toast('✓ Préstamo actualizado');
+    setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Guardar';}
+}
+async function payInstallment(id,name){
+  if(!confirm(`¿Confirmar cuota pagada de "${name}"?`)) return;
+  try{
+    const r=await fetch(`${SB}/rest/v1/rpc/pay_installment_plan`,{method:'POST',headers:H,body:JSON.stringify({p_plan_id:id})});
+    if(!r.ok) throw new Error(await r.text());
+    toast('✓ Cuota registrada');
+    setTimeout(load,400);
+  }catch(e){toast('Error: '+e.message,'err');}
+}
 function confirmDeleteGF(id,name){
   document.getElementById('confirm-msg').textContent='¿Eliminar "'+name+'" permanentemente?';
   document.getElementById('confirm-btn').onclick=()=>deleteGF(id);
@@ -1528,7 +1645,7 @@ async function load(){
     const cycle=getCycleRange();
     const mesAnteriorInicio=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
 
-    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups,installmentPlansRaw]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
@@ -1542,7 +1659,8 @@ async function load(){
       q('transactions?transaction_date=gte.'+mesAnteriorInicio+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('envelopes?select=*&order=month.desc,name'),
       q('categories?select=*&order=name'),
-      q('expense_groups?select=*&order=name')
+      q('expense_groups?select=*&order=name'),
+      q('v_installment_plans?select=*&order=name')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -1556,6 +1674,7 @@ async function load(){
     const DCYC=Array.isArray(dinersCycleTxns)?dinersCycleTxns:[];
     const DEFS=Array.isArray(deferredGFs)?deferredGFs:[];
     const GRPS=Array.isArray(expGroups)?expGroups:[];
+    const PRESTAMOS=Array.isArray(installmentPlansRaw)?installmentPlansRaw:[];
     const GRPS_SUMMARY=GRPS.map(g=>{
       const items=GFS.filter(f=>f.group_id===g.id&&f.is_active);
       return {...g,items,total:items.reduce((s,f)=>s+$f(f.amount),0)};
@@ -1804,6 +1923,33 @@ async function load(){
           </div>`).join('')}
         </div>`:''}</div>
     </div></div>`;
+
+    // Préstamos personales (efectivo, sin tarjeta)
+    if(PRESTAMOS.length>0){
+      html+=`<p class="sl">préstamos personales · efectivo</p>`;
+      html+=`<div class="g" style="margin-bottom:20px">`;
+      html+=PRESTAMOS.map(p=>{
+        const totalCuotas=(p.paid_installments||0)+(p.cuotas_restantes||0);
+        const pctPagado=pct(p.paid_installments||0,totalCuotas||1);
+        let tipoLabel='';
+        if(p.repayment_type==='fixed_interest_declining_capital') tipoLabel=`Interés fijo $${$f(p.fixed_interest_amount).toFixed(2)} · Capital $${$f(p.capital_per_payment).toFixed(2)}`;
+        else if(p.repayment_type==='declining_balance_interest') tipoLabel=`Interés ${$f(p.monthly_interest_rate).toFixed(2)}% sobre saldo`;
+        else tipoLabel=`${totalCuotas} cuotas sin interés`;
+        return `<div class="deferred-item">
+          <div class="deferred-progress">
+            <p class="deferred-name">${p.name} <span style="font-size:9px;color:var(--warn);font-family:'DM Mono',monospace">Cuota ${p.paid_installments||0}${p.cuotas_restantes!=null?'/'+totalCuotas:''}</span></p>
+            <div class="deferred-bar"><div class="deferred-bar-fill" style="width:${pctPagado}%"></div></div>
+            <p class="deferred-meta">${tipoLabel} · Saldo capital: $${$f(p.outstanding_principal).toFixed(2)}${p.monto_pendiente!=null?' · Pendiente total: $'+$f(p.monto_pendiente).toFixed(2):''}</p>
+          </div>
+          <span class="deferred-amt">$${$f(p.monthly_amount).toFixed(2)}</span>
+          <div class="gf-acts">
+            <button class="txn-btn edit" onclick='openEditPrestamo(${JSON.stringify(p).replace(/'/g,"&#39;")})'>✏️</button>
+            <button class="btn btn-primary" style="padding:6px 10px;font-size:10px" onclick="payInstallment('${p.id}','${p.name.replace(/'/g,"\\'")}')">✓ Cuota pagada</button>
+          </div>
+        </div>`;
+      }).join('');
+      html+=`</div>`;
+    }
 
     // KPIs financieros
     html+=`<p class="sl">kpis financieros</p>`;
