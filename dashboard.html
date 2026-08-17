@@ -278,6 +278,7 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
 .deferred-bar-fill{height:100%;background:var(--warn);border-radius:2px}
 .deferred-meta{font-size:9px;color:var(--fg3);font-family:'DM Mono',monospace;margin-top:3px}
 .deferred-amt{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--warn);flex-shrink:0}
+.deferred-item .gf-acts{opacity:1}
 .divider-section{height:0.5px;background:var(--border);margin:8px 0 16px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -462,7 +463,7 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
     </div>
     <div class="form-row">
       <label class="form-label">Grupo (opcional — para sumar junto a otros)</label>
-      <select class="form-input" id="gf-group"><option value="">Sin grupo</option></select>
+      <select class="form-input" id="gf-group" onchange="onGroupSelectChange(this)"><option value="">Sin grupo</option></select>
     </div>
     <div class="form-row" style="display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="gf-is-cc" style="width:auto">
@@ -534,6 +535,10 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
         <label class="form-label">Saldo pendiente capital ($)</label>
         <input class="form-input" type="number" step="0.01" id="pr-outstanding">
       </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Monto total original (referencial, opcional)</label>
+      <input class="form-input" type="number" step="0.01" id="pr-total-amount">
     </div>
     <div class="form-row">
       <label class="form-label">Tipo de interés</label>
@@ -1169,8 +1174,23 @@ function renderGFSection(gfs){
 
 function populateGroupSelect(selectedId){
   const sel=document.getElementById('gf-group');
-  sel.innerHTML='<option value="">Sin grupo</option>'+_grps.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  sel.innerHTML='<option value="">Sin grupo</option>'+_grps.map(g=>`<option value="${g.id}">${g.name}</option>`).join('')+'<option value="__new__">➕ Crear nuevo grupo...</option>';
   sel.value=selectedId||'';
+}
+async function onGroupSelectChange(sel){
+  if(sel.value!=='__new__') return;
+  const name=(prompt('Nombre del nuevo grupo:')||'').trim();
+  if(!name){sel.value='';return;}
+  const color=prompt('Color en hex (ej: #4A90D9):','#A3B18A')||'#A3B18A';
+  try{
+    const r=await fetch(`${SB}/rest/v1/expense_groups`,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify({name,color})});
+    if(!r.ok) throw new Error(await r.text());
+    const nw=await r.json();
+    const created=Array.isArray(nw)?nw[0]:nw;
+    _grps.push(created);
+    populateGroupSelect(created.id);
+    toast('✓ Grupo "'+created.name+'" creado');
+  }catch(e){toast('Error: '+e.message,'err');sel.value='';}
 }
 function openAddGF(){
   document.getElementById('modal-gf-title').textContent='Nuevo Gasto Fijo';
@@ -1269,6 +1289,7 @@ function openEditPrestamo(p){
   document.getElementById('pr-name').value=p.name||'';
   document.getElementById('pr-monthly').value=p.monthly_amount||'';
   document.getElementById('pr-outstanding').value=p.outstanding_principal!=null?p.outstanding_principal:'';
+  document.getElementById('pr-total-amount').value=p.total_amount!=null?p.total_amount:'';
   document.getElementById('pr-type').value=p.repayment_type||'fixed_total_installments';
   document.getElementById('pr-total-installments').value=p.total_installments||((p.paid_installments||0)+(p.cuotas_restantes||0))||'';
   document.getElementById('pr-fixed-interest').value=p.fixed_interest_amount||'';
@@ -1288,6 +1309,7 @@ async function savePrestamo(){
     name:document.getElementById('pr-name').value.trim(),
     monthly_amount:parseFloat(document.getElementById('pr-monthly').value)||0,
     outstanding_principal:parseFloat(document.getElementById('pr-outstanding').value)||0,
+    total_amount:document.getElementById('pr-total-amount').value?parseFloat(document.getElementById('pr-total-amount').value):null,
     repayment_type:document.getElementById('pr-type').value,
     total_installments:parseInt(document.getElementById('pr-total-installments').value)||null,
     fixed_interest_amount:parseFloat(document.getElementById('pr-fixed-interest').value)||null,
@@ -1645,7 +1667,7 @@ async function load(){
     const cycle=getCycleRange();
     const mesAnteriorInicio=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
 
-    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups,installmentPlansRaw]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups,installmentPlansRaw,allInvTxns]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
@@ -1660,7 +1682,8 @@ async function load(){
       q('envelopes?select=*&order=month.desc,name'),
       q('categories?select=*&order=name'),
       q('expense_groups?select=*&order=name'),
-      q('v_installment_plans?select=*&order=name')
+      q('v_installment_plans?select=*&order=name'),
+      q('transactions?type=eq.inversion&select=amount')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -1682,6 +1705,8 @@ async function load(){
     const dDeferidoSum=DEFS.filter(d=>d.deferred_card==='diners').reduce((s,d)=>s+$f(d.cuota_mensual),0);
     const dBalance=$f(DINERS?.credit_card_balance??DINERS?.balance??0)+dDeferidoSum;
     const dId=DINERS?.id||'9b3b1c66-4661-4a0c-bc9c-994995aba043';
+    const invMes=T.filter(t=>t.type==='inversion').reduce((s,t)=>s+$f(t.amount),0);
+    const invTotal=(Array.isArray(allInvTxns)?allInvTxns:[]).reduce((s,t)=>s+$f(t.amount),0);
 
     _allTxns=T;_accs=A;_grps=GRPS;_defs=DEFS;_histTxns=Array.isArray(histTxns)?histTxns:[];
     const ALLENVS=Array.isArray(allEnvs)?allEnvs:[];
@@ -1806,6 +1831,13 @@ async function load(){
     html+=`<div class="g" style="margin-bottom:10px;overflow:hidden"><div class="gasto-breakdown">`;
     html+=`<div class="gb-item"><p class="gb-label">Gastos directos</p><p class="gb-val c-neg">${fmtFull(tGDirect)}</p><p class="gb-sub">compras, servicios, comida</p></div>`;
     html+=`<div class="gb-item"><p class="gb-label">Pago tarjeta Black</p><p class="gb-val c-warn">${fmtFull(tGTarjeta)}</p><p class="gb-sub">liquidación ciclo anterior</p></div>`;
+    html+=`</div></div>`;
+
+    // Inversión (XTB, Hapi, etc.)
+    html+=`<p class="sl">inversión</p>`;
+    html+=`<div class="g" style="margin-bottom:10px;overflow:hidden"><div class="gasto-breakdown">`;
+    html+=`<div class="gb-item"><p class="gb-label">Este mes</p><p class="gb-val c-pos">${fmtFull(invMes)}</p><p class="gb-sub">aportes registrados (XTB, Hapi, etc.)</p></div>`;
+    html+=`<div class="gb-item"><p class="gb-label">Acumulado histórico</p><p class="gb-val c-info">${fmtFull(invTotal)}</p><p class="gb-sub">total invertido desde el inicio</p></div>`;
     html+=`</div></div>`;
 
     // Grupos de ahorro / transferencia (etiquetas libres sobre gastos fijos)
