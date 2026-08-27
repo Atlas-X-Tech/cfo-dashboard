@@ -12,7 +12,7 @@
   --border:rgba(235,235,232,0.10);--border2:rgba(235,235,232,0.16);--border3:rgba(235,235,232,0.24);
   --fg:#EDEDEA;--fg2:rgba(237,237,234,0.68);--fg3:rgba(237,237,234,0.42);--fg4:rgba(237,237,234,0.24);
   --olive:#A3B18A;--olive-d:#588157;--olive-dd:#344E41;--cream:#EDEDEA;--brass:#C8A560;
-  --prod:#A3B18A;--pich:#C8A560;--guay:#7A9586;
+  --prod:#A3B18A;--pich:#C8A560;--guay:#7A9586;--xtb:#9D8AA8;
   --pos:#A3B18A;--neg:#C97B4A;--warn:#C8A560;--info:#7A9586;
   --pos-d:rgba(163,177,138,0.10);--neg-d:rgba(201,123,74,0.10);--warn-d:rgba(200,165,96,0.10);--info-d:rgba(122,149,134,0.10);
   --glass-strong:linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.01));
@@ -143,6 +143,7 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
 .at-prod{background:linear-gradient(90deg,var(--olive),transparent)}
 .at-pich{background:linear-gradient(90deg,var(--brass),transparent)}
 .at-guay{background:linear-gradient(90deg,var(--info),transparent)}
+.at-xtb{background:linear-gradient(90deg,var(--xtb),transparent)}
 .at-neg{background:linear-gradient(90deg,var(--neg),transparent)}
 .at-info{background:linear-gradient(90deg,var(--info),transparent)}
 .at-warn{background:linear-gradient(90deg,var(--brass),transparent)}
@@ -162,7 +163,7 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
 .pb{height:2px;background:rgba(218,215,205,0.06);border-radius:2px;margin-top:16px;overflow:hidden}
 .pb-fill{height:100%;border-radius:2px;transition:width 1s cubic-bezier(.4,0,.2,1)}
 .c-pos{color:var(--olive)}.c-neg{color:var(--neg)}.c-warn{color:var(--brass)}.c-info{color:var(--info)}
-.c-prod{color:var(--olive)}.c-pich{color:var(--brass)}.c-guay{color:var(--info)}.c-cash{color:#7B9E6B}
+.c-prod{color:var(--olive)}.c-pich{color:var(--brass)}.c-guay{color:var(--info)}.c-cash{color:#7B9E6B}.c-xtb{color:var(--xtb)}
 .black-wrap{padding:24px 26px}
 .black-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .black-name{font-family:'Sora',sans-serif;font-size:20px;letter-spacing:0.10em;color:var(--cream)}
@@ -186,6 +187,7 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
 .acc-prod{border-color:rgba(163,177,138,0.18)}.acc-prod:hover{border-color:rgba(163,177,138,0.35)}
 .acc-pich{border-color:rgba(200,165,96,0.18)}.acc-pich:hover{border-color:rgba(200,165,96,0.35)}
 .acc-guay{border-color:rgba(122,149,134,0.18)}.acc-guay:hover{border-color:rgba(122,149,134,0.35)}
+.acc-xtb{border-color:rgba(157,138,168,0.18)}.acc-xtb:hover{border-color:rgba(157,138,168,0.35)}
 .acc-cash{border-color:rgba(123,158,107,0.18)}.acc-cash:hover{border-color:rgba(123,158,107,0.35)}
 .op-cuentas{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
 .op-card{background:var(--glass-light);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;padding:18px 22px;position:relative;overflow:hidden;transition:all 0.3s cubic-bezier(.4,0,.2,1);box-shadow:0 8px 32px 0 rgba(0,0,0,0.37)}
@@ -1192,6 +1194,19 @@ async function onGroupSelectChange(sel){
     toast('✓ Grupo "'+created.name+'" creado');
   }catch(e){toast('Error: '+e.message,'err');sel.value='';}
 }
+async function openAddGrupo(){
+  const name=(prompt('Nombre del nuevo grupo (ej: Cumpleaños Papi):')||'').trim();
+  if(!name) return;
+  const color=prompt('Color en hex (ej: #4A90D9):','#A3B18A')||'#A3B18A';
+  try{
+    const r=await fetch(`${SB}/rest/v1/expense_groups`,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify({name,color})});
+    if(!r.ok) throw new Error(await r.text());
+    const nw=await r.json();
+    const created=Array.isArray(nw)?nw[0]:nw;
+    toast('✓ Grupo "'+created.name+'" creado — asígnale un gasto fijo para que sume monto');
+    load();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
 function openAddGF(){
   document.getElementById('modal-gf-title').textContent='Nuevo Gasto Fijo';
   ['gf-edit-id','gf-name','gf-amount','gf-deferred-total','gf-deferred-installments','gf-deferred-interest'].forEach(id=>document.getElementById(id).value='');
@@ -1701,7 +1716,7 @@ async function load(){
     const GRPS_SUMMARY=GRPS.map(g=>{
       const items=GFS.filter(f=>f.group_id===g.id&&f.is_active);
       return {...g,items,total:items.reduce((s,f)=>s+$f(f.amount),0)};
-    }).filter(g=>g.items.length>0);
+    });
     const dDeferidoSum=DEFS.filter(d=>d.deferred_card==='diners').reduce((s,d)=>s+$f(d.cuota_mensual),0);
     const dBalance=$f(DINERS?.credit_card_balance??DINERS?.balance??0)+dDeferidoSum;
     const dId=DINERS?.id||'9b3b1c66-4661-4a0c-bc9c-994995aba043';
@@ -1733,6 +1748,8 @@ async function load(){
     const metas=byRole('metas')[0]||{id:null,balance:0};
     const metasNana=byRole('metas_terceros')[0]||{id:null,balance:0,name:'Guayaquil Ahorro - Meta Ñaña'};
     const efectivoAcc=byRole('efectivo')[0]||{id:'66025932-220b-4f76-a0b5-e5abfd85b04b',balance:0,name:'Efectivo',bank:'Efectivo'};
+    const xtbPrincipal=byRole('inversion_etf_principal')[0]||{id:null,balance:0,name:'XTB Principal',bank:'XTB'};
+    const xtbRiesgo=byRole('inversion_etf_riesgo')[0]||{id:null,balance:0,name:'XTB Riesgo',bank:'XTB'};
 
     const black=CC[0]||{};
     const bDeuda=$f(black.previous_cycle_debt);
@@ -1841,18 +1858,20 @@ async function load(){
     html+=`</div></div>`;
 
     // Grupos de ahorro / transferencia (etiquetas libres sobre gastos fijos)
+    html+=`<div class="sl-row"><span class="sl-label">separar este mes</span><button class="add-btn" onclick="openAddGrupo()">+ Agregar grupo</button></div>`;
     if(GRPS_SUMMARY.length>0){
-      html+=`<p class="sl">separar este mes</p>`;
       html+=`<div class="g4" style="margin-bottom:10px">`;
       GRPS_SUMMARY.forEach(g=>{
         html+=`<div class="g kpi" style="border-color:${g.color}33">
           <div class="at" style="background:${g.color}"></div>
           <p class="kpi-label" style="color:${g.color}">${g.name}</p>
           <p class="kpi-val">${fmtFull(g.total)}</p>
-          <p class="kpi-sub">${g.items.map(i=>i.name).join(' + ')}</p>
+          <p class="kpi-sub">${g.items.length>0?g.items.map(i=>i.name).join(' + '):'sin gastos asignados aún'}</p>
         </div>`;
       });
       html+=`</div>`;
+    } else {
+      html+=`<div class="g" style="margin-bottom:10px;padding:16px 20px"><p style="text-align:center;color:var(--fg4);font-size:10px;font-family:'DM Mono',monospace">Sin grupos — usa "+ Agregar grupo"</p></div>`;
     }
 
     // Cuentas operativas
@@ -2011,6 +2030,13 @@ async function load(){
     html+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">`;
     [{a:inv,label:'Inversión mensual'},{a:metas,label:'Metas · Carlos'},{a:metasNana,label:'Metas · Ñaña (no cuenta patrimonio)'}].forEach(({a,label})=>{
       html+=`<div class="g acc acc-guay"><div class="at at-guay"></div><p class="acc-bank c-guay">Guayaquil</p><p class="acc-name">${a.name||'-'}</p>${a.id?editableAccBal(a,'c-guay'):`<p class="acc-bal c-guay">${fmtFull(a.balance)}</p>`}<p class="acc-role">${label}</p></div>`;
+    });
+    html+=`</div>`;
+
+    html+=`<p class="sl">cuentas · XTB</p>`;
+    html+=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px">`;
+    [{a:xtbPrincipal,label:'ETF Principal'},{a:xtbRiesgo,label:'ETF Riesgo'}].forEach(({a,label})=>{
+      html+=`<div class="g acc acc-xtb"><div class="at at-xtb"></div><p class="acc-bank c-xtb">XTB</p><p class="acc-name">${a.name||'-'}</p>${a.id?editableAccBal(a,'c-xtb'):`<p class="acc-bal c-xtb">${fmtFull(a.balance)}</p>`}<p class="acc-role">${label}</p></div>`;
     });
     html+=`</div>`;
 
