@@ -894,6 +894,27 @@ header{padding:32px 0 24px;border-bottom:0.5px solid var(--border)}
   </div>
 </div>
 
+<!-- MODAL COMPRA ETF -->
+<div class="modal-overlay" id="modal-compra-etf">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-compra-etf')">✕</button>
+    <p class="modal-title">Nueva Compra ETF</p>
+    <div class="form-row">
+      <label class="form-label">Monto total ($)</label>
+      <input class="form-input" type="number" step="0.01" id="compra-etf-amount" placeholder="0.00">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Fecha</label>
+      <input class="form-input" type="date" id="compra-etf-date">
+    </div>
+    <p style="font-size:9.5px;color:var(--fg4);margin:-8px 0 14px;font-family:'DM Mono',monospace">Se reparte automáticamente en tus 4 ETFs según tu asignación objetivo, con el precio real del día.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-compra-etf')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-compra-etf" onclick="saveCompraETF()">Registrar compra</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="shell">
@@ -1793,6 +1814,44 @@ async function deleteETF(id){
   }catch(e){toast('Error: '+e.message,'err');closeModal('modal-confirm');}
 }
 
+// ── ETF LOTES (compras individuales vía n8n) ──────────────────────────────────────
+const N8N_WEBHOOK_ETF_COMPRA='https://atlasx-n8n.ssjlyd.easypanel.host/webhook/etf-registrar-compra';
+function openAddCompraETF(){
+  document.getElementById('compra-etf-amount').value='';
+  document.getElementById('compra-etf-date').value=new Date().toISOString().split('T')[0];
+  openModal('modal-compra-etf');
+}
+async function saveCompraETF(){
+  const amount=parseFloat(document.getElementById('compra-etf-amount').value)||0;
+  const date=document.getElementById('compra-etf-date').value;
+  if(!amount||amount<=0){toast('Ingresa un monto válido','err');return;}
+  const btn=document.getElementById('btn-save-compra-etf');
+  btn.disabled=true;btn.textContent='Procesando...';
+  try{
+    const r=await fetch(N8N_WEBHOOK_ETF_COMPRA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount,date})});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    toast('✓ Compra de '+fmt(amount)+' registrada en los 4 ETFs');
+    closeModal('modal-compra-etf');
+    setTimeout(load,800);
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.textContent='Registrar compra';}
+}
+function renderETFLots(lots,holdingId,livePrice){
+  const mine=lots.filter(l=>l.holding_id===holdingId).sort((a,b)=>new Date(b.entry_date)-new Date(a.entry_date));
+  if(!mine.length) return `<p style="text-align:center;color:var(--fg4);font-size:10px;padding:12px;font-family:'DM Mono',monospace">Sin lotes registrados aún</p>`;
+  return mine.map(l=>{
+    const entryPrice=$f(l.entry_price),qty=$f(l.quantity);
+    const gainPct=(livePrice&&entryPrice>0)?((livePrice-entryPrice)/entryPrice*100):null;
+    return `<div class="txn">
+      <div class="txn-l">
+        <span class="txn-desc">${l.entry_date} · ${fmt(l.amount_invested)}</span>
+        <span class="txn-meta">Entrada $${entryPrice.toFixed(2)} · ${qty.toFixed(4)} part.</span>
+      </div>
+      <span class="txn-amt ${gainPct==null?'':gainPct>=0?'c-pos':'c-neg'}">${gainPct==null?'—':(gainPct>=0?'+':'')+gainPct.toFixed(1)+'%'}</span>
+    </div>`;
+  }).join('');
+}
+
 // ── RENDER ADMINISTRAR ───────────────────────────────────────────────────────
 function renderCuentasAdmin(accounts){
   if(!accounts.length) return '<p style="text-align:center;color:var(--fg4);font-size:10px;padding:16px;font-family:\'DM Mono\',monospace">Sin cuentas</p>';
@@ -1933,7 +1992,7 @@ async function load(){
     const mesAnteriorInicio=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
     const seisMesesInicio=new Date(now.getFullYear(),now.getMonth()-5,1).toISOString().split('T')[0];
 
-    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups,installmentPlansRaw,allInvTxns,sixMoTxns,etfHoldings]=await Promise.all([
+    const [accs,txns,ccs,envs,chk,gfs,dinersAcc,blackCycleTxns,dinersCycleTxns,deferredGFs,histTxns,allEnvs,allCats,expGroups,installmentPlansRaw,allInvTxns,sixMoTxns,etfHoldings,etfLotsRaw,etfPricesRaw]=await Promise.all([
       q('accounts?select=id,name,bank,role,balance,credit_card_balance&order=bank'),
       q('transactions?transaction_date=gte.'+mes+'&order=transaction_date.desc,created_at.desc&select=id,type,amount,description,transaction_date,account_id,transfer_to_account_id,category_id,is_credit_card,source,categories(name),accounts!transactions_account_id_fkey(bank,name)'),
       q('v_credit_card_cycle?select=*'),
@@ -1951,7 +2010,9 @@ async function load(){
       q('v_installment_plans?select=*&order=name'),
       q('transactions?type=eq.inversion&select=amount'),
       q('transactions?transaction_date=gte.'+seisMesesInicio+'&select=type,amount,transaction_date'),
-      q('etf_holdings?is_active=eq.true&select=*&order=invested_amount.desc')
+      q('etf_holdings?is_active=eq.true&select=*&order=invested_amount.desc'),
+      q('etf_lots?select=*&order=entry_date.desc'),
+      q('etf_prices?select=*')
     ]);
 
     const T=Array.isArray(txns)?txns:[];
@@ -1976,6 +2037,8 @@ async function load(){
     const invMes=T.filter(t=>t.type==='inversion').reduce((s,t)=>s+$f(t.amount),0);
     const invTotal=(Array.isArray(allInvTxns)?allInvTxns:[]).reduce((s,t)=>s+$f(t.amount),0);
     const ETF=Array.isArray(etfHoldings)?etfHoldings:[];
+    const ETF_LOTS=Array.isArray(etfLotsRaw)?etfLotsRaw:[];
+    const ETF_PRICES=Array.isArray(etfPricesRaw)?etfPricesRaw:[];
     const etfInvertido=ETF.reduce((s,e)=>s+$f(e.invested_amount),0);
     const etfActual=ETF.reduce((s,e)=>s+$f(e.current_value??e.invested_amount),0);
     const etfGanancia=etfActual-etfInvertido;
@@ -2381,7 +2444,7 @@ async function load(){
       <div class="gb-item"><p class="gb-label">Aportes este mes</p><p class="gb-val c-pos">${fmtFull(invMes)}</p><p class="gb-sub">registrados como tipo "inversión"</p></div>
       <div class="gb-item"><p class="gb-label">Acumulado histórico</p><p class="gb-val c-info">${fmtFull(invTotal)}</p><p class="gb-sub">total invertido desde el inicio</p></div>
     </div></div>`;
-    hInversiones+=`<div class="sl-row"><span class="sl-label">holdings</span><button class="add-btn" onclick="openAddETF()">+ Agregar ETF</button></div>`;
+    hInversiones+=`<div class="sl-row"><span class="sl-label">holdings</span><div style="display:flex;gap:6px"><button class="add-btn" onclick="openAddCompraETF()">+ Nueva compra</button><button class="add-btn" onclick="openAddETF()">+ Agregar ETF</button></div></div>`;
     if(ETF.length>0){
       hInversiones+=`<div class="etf-grid" style="margin-bottom:20px">`;
       ETF.forEach(e=>{
@@ -2397,6 +2460,13 @@ async function load(){
           <p class="etf-val">${fmtFull(cur)}</p>
           <p class="etf-sub">Invertido ${fmtFull(invAmt)}${e.shares?' · '+e.shares+' part.':''}</p>
           ${e.ticker?`<div class="tv-embed" id="${widgetId}"></div>`:`<a class="tv-link" href="https://www.tradingview.com/symbols/search/?text=${tvQuery}" target="_blank" rel="noopener noreferrer">↗ Buscar en TradingView</a>`}
+          <button class="card-toggle" onclick="toggleCard('etf-${e.id}')">
+            <span>Ver lotes (${ETF_LOTS.filter(l=>l.holding_id===e.id).length})</span>
+            <span class="card-toggle-icon" id="ci-etf-${e.id}">▼</span>
+          </button>
+          <div class="card-body" id="cb-etf-${e.id}">
+            <div style="padding-top:8px">${renderETFLots(ETF_LOTS,e.id,ETF_PRICES.find(p=>p.yahoo_ticker===e.yahoo_ticker)?$f(ETF_PRICES.find(p=>p.yahoo_ticker===e.yahoo_ticker).price):null)}</div>
+          </div>
           <div class="gf-acts" style="opacity:1;margin-top:8px;justify-content:flex-end">
             <button class="txn-btn edit" onclick='openEditETF(${JSON.stringify(e)})'>✏️</button>
             <button class="txn-btn del" onclick="confirmDeleteETF('${e.id}','${(e.name||'').replace(/'/g,"&#39;")}')">🗑️</button>
